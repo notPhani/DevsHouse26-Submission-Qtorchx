@@ -1064,6 +1064,41 @@ const PHI_LUT=(()=>{
   return lut;
 })();
 
+function samplePhiBilinear(phi,NQ,NT,fq,ft){
+  const sq=Math.max(0,Math.min(NQ-1.001,fq));
+  const st=Math.max(0,Math.min(NT-2.001,ft));
+  const qi=Math.floor(sq), ti=Math.floor(st);
+  const dq=sq-qi, dt=st-ti;
+  const q1=Math.min(qi+1,NQ-1), t1=Math.min(ti+1,NT-1);
+  const v00=phi[qi][ti], v01=phi[qi][t1];
+  const v10=phi[q1][ti], v11=phi[q1][t1];
+  return v00*(1-dt)*(1-dq)+v01*dt*(1-dq)+v10*(1-dt)*dq+v11*dt*dq;
+}
+
+function samplePhiAtField(phi,NQ,NT,cellW,cellH,px,py){
+  return samplePhiBilinear(phi,NQ,NT,py/cellH-0.5,px/cellW-0.5);
+}
+
+function phiContourSegments(cs,tE,rE,bE,lE,centerAbove){
+  switch(cs){
+    case 1: return [[lE,bE]];
+    case 2: return [[bE,rE]];
+    case 3: return [[lE,rE]];
+    case 4: return [[tE,rE]];
+    case 5: return centerAbove?[[tE,lE],[bE,rE]]:[[tE,rE],[lE,bE]];
+    case 6: return [[tE,bE]];
+    case 7: return [[tE,lE]];
+    case 8: return [[tE,lE]];
+    case 9: return [[tE,bE]];
+    case 10:return centerAbove?[[tE,rE],[lE,bE]]:[[tE,lE],[bE,rE]];
+    case 11:return [[tE,rE]];
+    case 12:return [[lE,rE]];
+    case 13:return [[bE,rE]];
+    case 14:return [[lE,bE]];
+    default:return [];
+  }
+}
+
 function renderPhiField(phi){
   if(!phi||!document.getElementById('inspectToggle').checked) return;
   const NQ=phi.length, NT=phi[0].length;
@@ -1077,15 +1112,9 @@ function renderPhiField(phi){
   const id=ctx.createImageData(fieldW,fieldH);
   for(let py=0;py<fieldH;py++){
     for(let px=0;px<fieldW;px++){
-      let fq=py/cellH-0.5, ft=px/cellW-0.5;
-      fq=Math.max(0,Math.min(NQ-1.001,fq));
-      ft=Math.max(0,Math.min(NT-2.001,ft));
-      const qi=Math.floor(fq), ti=Math.floor(ft);
-      const dq=fq-qi, dt=ft-ti;
-      const q1=Math.min(qi+1,NQ-1), t1=Math.min(ti+1,NT-1);
-      const v00=(phi[qi][ti]-lo)/range, v01=(phi[qi][t1]-lo)/range;
-      const v10=(phi[q1][ti]-lo)/range, v11=(phi[q1][t1]-lo)/range;
-      const bil=v00*(1-dt)*(1-dq)+v01*dt*(1-dq)+v10*(1-dt)*dq+v11*dt*dq;
+      const fq=Math.max(0,Math.min(NQ-1.001,py/cellH-0.5));
+      const ft=Math.max(0,Math.min(NT-2.001,px/cellW-0.5));
+      const bil=(samplePhiBilinear(phi,NQ,NT,fq,ft)-lo)/range;
       const w=0.03*Math.sin(fq*2.2+phiAnimT*2.0)*Math.cos(ft*1.8-phiAnimT*1.5);
       const n=Math.max(0,Math.min(1,bil+w));
       const ci=Math.min(255,Math.floor(n*255));
@@ -1111,21 +1140,39 @@ function renderPhiField(phi){
 function drawPhiContours(phi,NQ,NT,fieldW,fieldH,lo,range){
   const cellW=fieldW/(NT-1), cellH=fieldH/NQ;
   const numC=5;
+  const samplesPerCell=8;
+  const fineCols=Math.max(2,(NT-1)*samplesPerCell+1);
+  const fineRows=Math.max(2,NQ*samplesPerCell+1);
+  const stepX=fieldW/(fineCols-1), stepY=fieldH/(fineRows-1);
   const edgeLerp=(a,b,va,vb,lv)=>{const d=vb-va;return d===0?a+(b-a)*0.5:a+(b-a)*(lv-va)/d;};
   const pulse=0.22+0.10*Math.abs(Math.sin(phiAnimT*0.5));
-  ctx.save(); ctx.strokeStyle=`rgba(255,255,255,${pulse.toFixed(2)})`; ctx.lineWidth=0.75;
+  const smoothPhi=Array.from({length:fineRows},(_,row)=>{
+    const y=Math.min(fieldH,row*stepY);
+    return Array.from({length:fineCols},(_,col)=>{
+      const x=Math.min(fieldW,col*stepX);
+      return samplePhiAtField(phi,NQ,NT,cellW,cellH,x,y);
+    });
+  });
+  ctx.save();
+  ctx.strokeStyle=`rgba(255,255,255,${pulse.toFixed(2)})`;
+  ctx.lineWidth=0.85;
+  ctx.lineJoin='round';
+  ctx.lineCap='round';
   for(let ci=0;ci<numC;ci++){
     const level=lo+(ci+1)/(numC+1)*range;
     ctx.beginPath();
-    for(let q=0;q<NQ-1;q++){
-      for(let t=0;t<NT-2;t++){
-        const vTL=phi[q][t],vTR=phi[q][t+1],vBL=phi[q+1][t],vBR=phi[q+1][t+1];
+    for(let q=0;q<fineRows-1;q++){
+      const y0=q*stepY, y1=(q+1)*stepY;
+      const topRow=smoothPhi[q], botRow=smoothPhi[q+1];
+      for(let t=0;t<fineCols-1;t++){
+        const vTL=topRow[t],vTR=topRow[t+1],vBL=botRow[t],vBR=botRow[t+1];
         const cs=(vTL>level?8:0)|(vTR>level?4:0)|(vBR>level?2:0)|(vBL>level?1:0);
         if(cs===0||cs===15) continue;
-        const x0=t*cellW,y0=q*cellH,x1=(t+1)*cellW,y1=(q+1)*cellH;
+        const x0=t*stepX, x1=(t+1)*stepX;
         const tE=[edgeLerp(x0,x1,vTL,vTR,level),y0],rE=[x1,edgeLerp(y0,y1,vTR,vBR,level)];
         const bE=[edgeLerp(x0,x1,vBL,vBR,level),y1],lE=[x0,edgeLerp(y0,y1,vTL,vBL,level)];
-        const segs={1:[[lE,bE]],2:[[bE,rE]],3:[[lE,rE]],4:[[tE,rE]],5:[[tE,rE],[lE,bE]],6:[[tE,bE]],7:[[tE,lE]],8:[[tE,lE]],9:[[tE,bE]],10:[[tE,lE],[bE,rE]],11:[[tE,rE]],12:[[lE,rE]],13:[[bE,rE]],14:[[lE,bE]]}[cs]||[];
+        const centerAbove=((vTL+vTR+vBL+vBR)*0.25)>level;
+        const segs=phiContourSegments(cs,tE,rE,bE,lE,centerAbove);
         for(const[p1,p2] of segs){ctx.moveTo(p1[0],p1[1]);ctx.lineTo(p2[0],p2[1]);}
       }
     }
