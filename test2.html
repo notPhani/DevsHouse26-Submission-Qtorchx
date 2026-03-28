@@ -3,111 +3,615 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QtorchX - QNaF Synthetic Topography</title>
+    <title>QtorchX - The QNaF Engine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
         body, html {
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-            background-color: #ffffff;
+            margin: 0; padding: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            color: #fff;
         }
 
+        #smoke-canvas {
+            position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 0; pointer-events: none;
+        }
         #field-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
+            position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 1; pointer-events: none;
+            mix-blend-mode: difference;
+        }
+
+        /* ── NAVBAR ── */
+        .nav-container {
+            position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+            z-index: 100; width: 90%; max-width: 1000px;
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(10,10,12,0.6);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px 24px; border-radius: 50px;
+        }
+        .brand { font-weight: 800; font-size: 1.1rem; letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px; }
+        .brand span { font-weight: 400; color: #888; font-size: 0.9rem; }
+        .nav-links { display: flex; gap: 32px; }
+        .nav-links a { color: #aaa; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: color 0.2s; }
+        .nav-links a:hover { color: #fff; }
+
+        /* ── SNAP SCROLL ── */
+        .snap-container {
+            position: absolute; top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 10;
+            overflow-y: scroll; overflow-x: hidden;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
+        /* Each section is a hard viewport box — nothing escapes */
+        .section {
             width: 100vw;
             height: 100vh;
-            z-index: 0; 
-            pointer-events: none;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background: transparent;
+            overflow: hidden;
         }
 
-        .scroll-space {
+        /* ── S1: HERO ── */
+        .hero-title {
+            font-size: clamp(2.5rem, 5vw, 5.5rem);
+            font-weight: 800; letter-spacing: -0.04em; line-height: 1.05;
+            text-align: center; margin: 0; z-index: 2;
+        }
+        .inverse-text { color: #fff; mix-blend-mode: difference; }
+        .gradient-text {
+            background: linear-gradient(90deg, #fff 0%, #3498db 60%, #9b59b6 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+        .hero-subtext {
+            font-family: 'JetBrains Mono', monospace;
+            color: rgba(255,255,255,0.75);
+            max-width: 650px; text-align: center; margin-top: 2.5rem;
+            font-size: 0.9rem; line-height: 1.7; z-index: 2;
+            background: rgba(12,12,15,0.85);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 24px 32px; border-radius: 8px;
+        }
+        .hero-subtext strong { color: #fff; font-weight: 700; }
+
+        /* ══════════════════════════════════════════
+           S2 LAYOUT — the trick:
+
+           .s2-inner fills the entire section height.
+           padding-top clears the navbar.
+           .arena uses flex:1 + min-height:0 so it
+           absorbs all remaining space without ever
+           pushing past the section boundary.
+        ══════════════════════════════════════════ */
+
+        .s2-inner {
+            width: 100%;
+            height: 100%;              /* fill the section */
+            max-width: 1100px;
+            padding: 82px 32px 18px;  /* top = navbar(72px) + gap */
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 0;             /* allow inner flex children to compress */
+            z-index: 2;
+        }
+
+        /* Header text — fixed, never grows */
+        .s2-kicker {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.67rem; letter-spacing: 0.18em;
+            text-transform: uppercase; color: #444;
+            margin-bottom: 7px; text-align: center;
+            flex-shrink: 0;
+        }
+        .s2-title {
+            font-size: clamp(1.45rem, 2.5vw, 2.4rem);
+            font-weight: 800; letter-spacing: -0.04em; line-height: 1.0;
+            text-align: center; margin: 0 0 7px;
+            flex-shrink: 0;
+        }
+        .s2-title .dim   { color: #fff; }
+        .s2-title .accent {
+            background: linear-gradient(90deg, #e74c3c, #c0392b);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .s2-sub {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.73rem; color: #555;
+            max-width: 500px; line-height: 1.6;
+            text-align: center; margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+        .s2-sub strong { color: #888; }
+
+        .s2-divider {
+            width: 1px; height: 16px;
+            background: linear-gradient(to bottom, transparent, #2a2a2a, transparent);
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+
+        /* Arena absorbs all remaining vertical space */
+        .arena {
+            display: grid;
+            grid-template-columns: 1fr 42px 1fr;
+            width: 100%;
+            flex: 1;        /* grow to fill */
+            min-height: 0;  /* shrink below content if needed */
+            align-items: stretch;
+        }
+
+        /* Cards fill arena height, clip internally */
+        .card {
+            border-radius: 14px;
+            padding: 18px 22px 16px;
+            display: flex;
+            flex-direction: column;
             position: relative;
-            z-index: 1;
-            height: 500vh; 
-            pointer-events: none;
+            overflow: hidden;
+            min-height: 0;
+            background: rgba(10,10,13,0.75);
+            transition: border-color 0.4s ease;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 10%; right: 10%; height: 1px;
+        }
+        .card-legacy { border: 1px solid rgba(231,76,60,0.15); }
+        .card-legacy::before { background: linear-gradient(90deg,transparent,rgba(231,76,60,0.5),transparent); }
+        .card-legacy:hover { border-color: rgba(231,76,60,0.4); }
+        .card-qtorch { border: 1px solid rgba(52,152,219,0.15); }
+        .card-qtorch::before { background: linear-gradient(90deg,transparent,rgba(52,152,219,0.55),transparent); }
+        .card-qtorch:hover { border-color: rgba(52,152,219,0.45); }
+
+        .card-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem; letter-spacing: 0.14em;
+            text-transform: uppercase; margin-bottom: 5px;
+            flex-shrink: 0;
+        }
+        .tag-red  { color: #e74c3c; }
+        .tag-blue { color: #3498db; }
+
+        .card-title {
+            font-size: 1.2rem; font-weight: 700;
+            letter-spacing: -0.03em; line-height: 1.1;
+            margin-bottom: 8px;
+            flex-shrink: 0;
+        }
+        .title-red {
+            background: linear-gradient(110deg, #fff 0%, #e74c3c 55%, #90160a 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block;
+        }
+        .title-blue {
+            background: linear-gradient(110deg, #fff 0%, #3498db 55%, #9b59b6 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block;
+        }
+
+        /* Description: grows to push vis to bottom, clips rather than overflows card */
+        .card-desc {
+            font-size: 0.79rem; color: #666; line-height: 1.65;
+            margin-bottom: 12px;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .card-desc strong { color: #999; font-weight: 600; }
+
+        /* Vis stage: always 108px, never grows */
+        .vis-stage {
+            position: relative;
+            width: 100%; height: 108px;
+            background: #050507;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        /* Gate viz */
+        .gate-track {
+            position: absolute; top: 50%; left: 0; right: 0;
+            height: 1px; background: rgba(255,255,255,0.1);
+            transform: translateY(-50%);
+        }
+        .gate-row { position: absolute; inset: 0; display: flex; align-items: center; }
+        .gate-group {
+            flex: 1; display: flex; align-items: center;
+            justify-content: center; position: relative; height: 100%;
+        }
+        .gate-sq {
+            width: 16px; height: 16px;
+            border: 1px solid rgba(255,255,255,0.15); border-radius: 3px;
+            position: absolute; top: 50%; transform: translateY(-50%);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .gate-sq span {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 7px; color: rgba(255,255,255,0.3);
+        }
+        .noise-spike {
+            position: absolute; width: 2px; border-radius: 1px;
+            background: #e74c3c; top: 50%; left: 50%;
+            transform: translateX(-50%) translateY(-50%);
+            opacity: 0; height: 0;
+        }
+        .error-burst {
+            position: absolute; width: 32px; height: 32px;
+            border-radius: 50%; border: 1px solid rgba(231,76,60,0.65);
+            top: 50%; left: 50%;
+            transform: translate(-50%,-50%) scale(0); opacity: 0;
+        }
+        .vis-label {
+            position: absolute; bottom: 7px; right: 9px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem; letter-spacing: 0.08em;
+        }
+        .vis-label-red  { color: rgba(231,76,60,0.4); }
+        .vis-label-blue { color: rgba(52,152,219,0.45); }
+        #phi-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+        /* VS column */
+        .vs-col {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 12px; padding: 0 4px;
+        }
+        .vs-line {
+            width: 1px; flex: 1;
+            background: linear-gradient(to bottom,transparent,#222 30%,#222 70%,transparent);
+        }
+        .vs-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.58rem; color: #323232; letter-spacing: 0.1em;
+            writing-mode: vertical-lr; transform: rotate(180deg);
+        }
+
+        /* Stat row — fixed, shrinks nothing above it */
+        .stat-row {
+            display: grid; grid-template-columns: repeat(3,1fr);
+            gap: 9px; width: 100%; margin-top: 9px;
+            flex-shrink: 0;
+        }
+        .stat-card {
+            background: rgba(10,10,13,0.55);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px; padding: 11px 14px;
+            display: flex; flex-direction: column; gap: 3px;
+            transition: border-color 0.3s;
+        }
+        .stat-card:hover { border-color: rgba(255,255,255,0.1); }
+        .stat-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.58rem; letter-spacing: 0.1em;
+            color: #363636; text-transform: uppercase;
+        }
+        .stat-value {
+            font-size: 0.95rem; font-weight: 800; letter-spacing: -0.03em;
+            background: linear-gradient(90deg,#fff 0%,#3498db 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .stat-note { font-size: 0.68rem; color: #424242; line-height: 1.45; }
+
+        /* Keyframes */
+        @keyframes spikeAnim {
+            0%   { opacity:0; height:0; }
+            10%  { opacity:1; height:34px; }
+            35%  { opacity:.8; height:26px; }
+            55%  { opacity:1; height:38px; }
+            70%  { opacity:0; height:0; }
+            100% { opacity:0; }
+        }
+        @keyframes burstAnim {
+            0%   { opacity:0; transform:translate(-50%,-50%) scale(0); }
+            20%  { opacity:.85; transform:translate(-50%,-50%) scale(1); }
+            70%  { opacity:0; transform:translate(-50%,-50%) scale(2.2); }
+            100% { opacity:0; transform:translate(-50%,-50%) scale(2.2); }
         }
     </style>
 </head>
 <body>
 
-    <canvas id="field-canvas"></canvas>
-    <div class="scroll-space"></div>
+<canvas id="smoke-canvas"></canvas>
+<canvas id="field-canvas"></canvas>
 
-    <script>
-        const canvas = document.getElementById('field-canvas');
-        const ctx = canvas.getContext('2d');
-        let width, height;
+<div class="nav-container">
+    <div class="brand">QTORCHX <span>QNaF</span></div>
+    <div class="nav-links">
+        <a href="#formalism">Formalism</a>
+        <a href="#engine">Engine</a>
+        <a href="#deploy">Deploy</a>
+    </div>
+</div>
 
-        // Razor-sharp scaling for Retina/High-DPI displays
-        function resizeCanvas() {
-            const dpr = window.devicePixelRatio || 1;
-            width = window.innerWidth;
-            height = window.innerHeight;
-            canvas.width = width * dpr;
-            canvas.height = height * dpr;
-            ctx.scale(dpr, dpr);
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+<div class="snap-container" id="scroll-container">
 
-        // Smooth Scroll LERP
-        let currentScroll = 0;
-        let targetScroll = 0;
+    <!-- S1 -->
+    <section class="section" id="hero">
+        <h1 class="hero-title">
+            <span class="inverse-text">You are modelling quantum noise</span><br>
+            <span class="gradient-text">the wrong way.</span>
+        </h1>
+        <p class="hero-subtext">
+            Introducing <strong>QNaF</strong>: A spatiotemporal formalism modeling environmental
+            interactions as a differentiable latent field Φ(x,t) ∈ ℝᵈ. Simulate complex unitary
+            dynamics and non-Markovian noise via GPU-accelerated stochastic differential equations.
+        </p>
+    </section>
 
-        window.addEventListener('scroll', () => {
-            targetScroll = window.scrollY;
-        });
+    <!-- S2 -->
+    <section class="section" id="formalism">
+        <div class="s2-inner">
 
-        // Field Configuration
-        const numLines = 45; // Bumped up slightly to show off the intersections
+            <p class="s2-kicker">The Noise Problem / Section 02</p>
+            <h2 class="s2-title">
+                <span class="dim">The limits of</span>
+                <span class="accent"> Discrete Injection.</span>
+            </h2>
+            <p class="s2-sub">
+                Standard engines treat decoherence as isolated gate errors.<br>
+                Real hardware experiences <strong>continuous, spatially-correlated noise</strong>.
+            </p>
+            <div class="s2-divider"></div>
 
-        function render() {
-            ctx.clearRect(0, 0, width, height);
+            <div class="arena">
 
-            currentScroll += (targetScroll - currentScroll) * 0.05;
-            const time = currentScroll * 0.0015;
+                <div class="card card-legacy">
+                    <p class="card-tag tag-red">Standard Model — IBM / Cirq</p>
+                    <h3 class="card-title"><span class="title-red">Markovian<br>Overlays</span></h3>
+                    <p class="card-desc">
+                        Noise is injected as <strong>discrete Gaussian depolarizing channels</strong>
+                        after gate execution. Qubits are assumed independent — real spatial crosstalk
+                        and memory effects go unmodeled. Each error event is an atomistic, isolated jolt.
+                    </p>
+                    <div class="vis-stage" id="vis-legacy">
+                        <div class="gate-track"></div>
+                        <div class="gate-row" id="gate-row"></div>
+                        <p class="vis-label vis-label-red">P(ε) ~ 𝒩(0, σ²)</p>
+                    </div>
+                </div>
 
-            ctx.lineCap = 'round';
+                <div class="vs-col">
+                    <div class="vs-line"></div>
+                    <span class="vs-badge">VS</span>
+                    <div class="vs-line"></div>
+                </div>
 
-            for (let i = 0; i < numLines; i++) {
-                ctx.beginPath();
-                
-                // Spread the starting Y positions out
-                const yOffset = (i * (height * 1.5 / numLines)) - (height * 0.25);
-                ctx.moveTo(-100, yOffset);
+                <div class="card card-qtorch">
+                    <p class="card-tag tag-blue">QtorchX Formalism — QNaF</p>
+                    <h3 class="card-title"><span class="title-blue">Spatiotemporal<br>Φ-Fields</span></h3>
+                    <p class="card-desc">
+                        QNaF maps the circuit into a <strong>continuous differentiable latent field
+                        Φ(x,t)</strong>. Noise propagates fluidly via GPU-accelerated SDEs, naturally
+                        modeling non-Markovian memory and spatially correlated cross-qubit errors.
+                    </p>
+                    <div class="vis-stage" id="vis-qtorch">
+                        <canvas id="phi-canvas"></canvas>
+                        <p class="vis-label vis-label-blue">Φ(x,t) ∈ ℝᵈ — SDE</p>
+                    </div>
+                </div>
 
-                // --- THE DISTURBANCE NODES ---
-                // By multiplying 'i' by larger offsets (0.15, 0.08), the lines stop moving 
-                // perfectly parallel and start wrapping around invisible centers of gravity.
-                
-                const cp1x = width * 0.35 + Math.sin(time * 0.8 + i * 0.15) * (width * 0.2);
-                const cp1y = yOffset + Math.cos(time * 0.6 + i * 0.08) * 350;
-                
-                const cp2x = width * 0.65 + Math.cos(time * 0.9 - i * 0.12) * (width * 0.2);
-                const cp2y = yOffset + Math.sin(time * 0.7 - i * 0.1) * 350;
+            </div>
 
-                const endX = width + 100;
-                const endY = yOffset + Math.sin(time * 0.5 + i * 0.05) * 150;
+            <div class="stat-row">
+                <div class="stat-card">
+                    <p class="stat-label">Noise Correlation</p>
+                    <p class="stat-value">Spatial</p>
+                    <p class="stat-note">Cross-qubit interactions propagate via field topology, not Lindblad operators.</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Memory Horizon</p>
+                    <p class="stat-value">Non-Markovian</p>
+                    <p class="stat-note">Historical bath states influence future evolution — no memoryless assumption.</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Differentiability</p>
+                    <p class="stat-value">End-to-End</p>
+                    <p class="stat-note">Φ-field is fully differentiable — gradients flow through noise during training.</p>
+                </div>
+            </div>
 
-                // --- FALSE DEPTH OF FIELD ---
-                // Lines smoothly pulse in thickness (0.5px to 2.0px) and opacity 
-                // as they flow, making some parts of the field pop into focus.
-                const dynamicWeight = 0.5 + Math.abs(Math.sin(time + i * 0.2)) * 1.5;
-                const dynamicAlpha = 0.15 + Math.abs(Math.cos(time + i * 0.1)) * 0.25;
-                
-                ctx.lineWidth = dynamicWeight;
-                ctx.strokeStyle = `rgba(0, 0, 0, ${dynamicAlpha})`;
+        </div>
+    </section>
 
-                ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, endX, endY);
-                ctx.stroke();
+    <!-- S3 & S4 -->
+    <section class="section" id="engine">
+        <h2 class="inverse-text">Section 3: The Engine</h2>
+    </section>
+    <section class="section" id="deploy">
+        <h2 class="inverse-text">Section 4: Deploy</h2>
+    </section>
+
+</div>
+
+<script type="x-shader/x-fragment" id="fs">
+    precision highp float;
+    uniform float u_time; uniform vec2 u_resolution;
+    float random(in vec2 s){return fract(sin(dot(s,vec2(12.9898,78.233)))*43758.5453123);}
+    float noise(in vec2 s){
+        vec2 i=floor(s),f=fract(s);
+        float a=random(i),b=random(i+vec2(1,0)),c=random(i+vec2(0,1)),d=random(i+vec2(1,1));
+        vec2 u=f*f*(3.0-2.0*f);
+        return mix(a,b,u.x)+(c-a)*u.y*(1.0-u.x)+(d-b)*u.x*u.y;
+    }
+    #define NUM_OCTAVES 5
+    float fbm(in vec2 s){
+        float v=0.0,a=0.5;vec2 sh=vec2(100.0);
+        mat2 rot=mat2(cos(0.5),sin(0.5),-sin(0.5),cos(0.5));
+        for(int i=0;i<NUM_OCTAVES;i++){v+=a*noise(s);s=rot*s*2.0+sh;a*=0.5;}
+        return v;
+    }
+    float dither(vec2 uv,float b){
+        int x=int(mod(uv.x,8.0)),y=int(mod(uv.y,8.0));
+        float l=fract(sin(dot(vec2(float(x),float(y)),vec2(12.9898,78.233)))*43758.5453);
+        return b>l?1.0:0.0;
+    }
+    void main(){
+        vec2 st=gl_FragCoord.xy/u_resolution.xy; st.x*=u_resolution.x/u_resolution.y;
+        vec2 v=vec2(-0.15,-0.2)*u_time,p=st*3.0+v;
+        float q=fbm(p),r=fbm(p+q+vec2(1.7,9.2)+0.075*u_time),f=fbm(p+r);
+        float smoke=pow(smoothstep(0.3867,0.9,f),1.5)*0.5;
+        gl_FragColor=vec4(vec3(dither(gl_FragCoord.xy,smoke)),1.0);
+    }
+</script>
+
+<script>
+    /* ── SCROLL ── */
+    const sc = document.getElementById('scroll-container');
+    let tScroll=0, cScroll=0;
+    sc.addEventListener('scroll', () => tScroll = sc.scrollTop);
+
+    /* ── WEBGL ── */
+    const sC = document.getElementById('smoke-canvas');
+    const gl = sC.getContext('webgl');
+    const pr = gl.createProgram();
+    const sh = (t,s) => { const h=gl.createShader(t); gl.shaderSource(h,s); gl.compileShader(h); return h; };
+    gl.attachShader(pr, sh(gl.VERTEX_SHADER, `attribute vec2 p;void main(){gl_Position=vec4(p,0,1);}`));
+    gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, document.getElementById('fs').text));
+    gl.linkProgram(pr); gl.useProgram(pr);
+    const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,b);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]), gl.STATIC_DRAW);
+    const aP=gl.getAttribLocation(pr,'p'); gl.enableVertexAttribArray(aP);
+    gl.vertexAttribPointer(aP,2,gl.FLOAT,false,0,0);
+    const uT=gl.getUniformLocation(pr,'u_time'), uR=gl.getUniformLocation(pr,'u_resolution');
+
+    /* ── BEZIER FIELD ── */
+    const fC = document.getElementById('field-canvas');
+    const cx2 = fC.getContext('2d');
+    const N=45, seeds=Array.from({length:N},()=>({speed:0.05+Math.random()*0.1,offset:Math.random()*10}));
+
+    function resize() {
+        const dpr=devicePixelRatio||1,w=innerWidth,h=innerHeight;
+        sC.width=fC.width=w*dpr; sC.height=fC.height=h*dpr;
+        cx2.scale(dpr,dpr); resizePhi();
+    }
+    window.addEventListener('resize',resize); resize();
+
+    const pt=(a,b,c,d,t)=>{const u=1-t;return u*u*u*a+3*u*u*t*b+3*u*t*t*c+t*t*t*d;};
+
+    /* ── LEGACY VIZ ── */
+    const gR=document.getElementById('gate-row'), gps=[];
+    ['H','CX','T','RZ','S','CX','H'].forEach(lbl=>{
+        const g=document.createElement('div'); g.className='gate-group';
+        const sq=document.createElement('div'); sq.className='gate-sq';
+        const sp=document.createElement('span'); sp.textContent=lbl; sq.appendChild(sp);
+        const spike=document.createElement('div'); spike.className='noise-spike';
+        const burst=document.createElement('div'); burst.className='error-burst';
+        g.appendChild(sq); g.appendChild(spike); g.appendChild(burst);
+        gR.appendChild(g); gps.push({spike,burst});
+    });
+    function fireBurst(){
+        const {spike,burst}=gps[Math.floor(Math.random()*gps.length)];
+        const up=Math.random()>.5;
+        spike.style.top=up?'auto':'50%'; spike.style.bottom=up?'50%':'auto';
+        spike.style.animation=burst.style.animation='none';
+        spike.style.opacity=burst.style.opacity='0';
+        void spike.offsetWidth;
+        const d=(0.55+Math.random()*0.4)+'s';
+        spike.style.animation=`spikeAnim ${d} ease-out forwards`;
+        burst.style.animation=`burstAnim ${d} ease-out forwards`;
+        setTimeout(fireBurst,280+Math.random()*680);
+    }
+    fireBurst();
+
+    /* ── PHI DOT LATTICE ── */
+    const pC=document.getElementById('phi-canvas'), pCtx=pC.getContext('2d');
+    let phiW=0,phiH=0;
+    function resizePhi(){
+        const el=document.getElementById('vis-qtorch');
+        if(!el)return;
+        phiW=el.clientWidth; phiH=el.clientHeight;
+        pC.width=phiW; pC.height=phiH;
+    }
+    function phiAt(x,y,t){
+        return(
+            Math.sin(x*.045+t*.55)*Math.cos(y*.06-t*.4)*.4+
+            Math.sin(x*.028-t*.35+1.4)*Math.cos(y*.032+t*.5)*.35+
+            Math.sin((x+y)*.022+t*.45)*.15+
+            Math.cos(x*.018+y*.04-t*.28)*.1
+        );
+    }
+    function drawLattice(t){
+        if(!phiW||!phiH)return;
+        pCtx.clearRect(0,0,phiW,phiH);
+        const cols=22,rows=7,px=14,py=12;
+        const sx=(phiW-px*2)/(cols-1),sy=(phiH-py*2)/(rows-1);
+        for(let r=0;r<rows;r++){
+            for(let c=0;c<cols;c++){
+                const cx=px+c*sx,cy=py+r*sy;
+                const v=phiAt(c*12,r*12,t),n=(v+1)/2;
+                pCtx.beginPath();
+                pCtx.arc(cx,cy,.4+n*3,0,Math.PI*2);
+                pCtx.fillStyle=`rgba(${Math.round(20+n*180)},${Math.round(80+n*90)},${Math.round(210+n*45)},${.1+n*.75})`;
+                pCtx.fill();
             }
-
-            requestAnimationFrame(render);
         }
+        const sx2=((t*.08)%1)*phiW;
+        const g=pCtx.createLinearGradient(sx2-24,0,sx2+24,0);
+        g.addColorStop(0,'rgba(52,152,219,0)');
+        g.addColorStop(.5,'rgba(52,152,219,.055)');
+        g.addColorStop(1,'rgba(52,152,219,0)');
+        pCtx.fillStyle=g; pCtx.fillRect(sx2-24,0,48,phiH);
+    }
 
-        render();
-    </script>
+    /* ── MAIN LOOP ── */
+    function loop(ts){
+        const w=innerWidth,h=innerHeight;
+        cScroll+=(tScroll-cScroll)*.05;
+        const time=cScroll*.0015+ts*.0002;
+
+        gl.viewport(0,0,sC.width,sC.height);
+        gl.uniform1f(uT,ts*.001); gl.uniform2f(uR,sC.width,sC.height);
+        gl.drawArrays(gl.TRIANGLES,0,6);
+
+        cx2.clearRect(0,0,w,h); cx2.strokeStyle='#fff';
+        for(let i=0;i<N;i++){
+            const yO=(i*(h*1.5/N))-(h*.25);
+            const c1x=w*.35+Math.sin(time*.8+i*.15)*(w*.2);
+            const c1y=yO+Math.cos(time*.6+i*.08)*350;
+            const c2x=w*.65+Math.cos(time*.9-i*.12)*(w*.2);
+            const c2y=yO+Math.sin(time*.7-i*.1)*350;
+            const eX=w+100,eY=yO+Math.sin(time*.5+i*.05)*150;
+            cx2.globalAlpha=.3+Math.abs(Math.cos(time+i*.1))*.5;
+            cx2.lineWidth=1+Math.abs(Math.sin(time+i*.2));
+            cx2.beginPath(); cx2.moveTo(-100,yO);
+            cx2.bezierCurveTo(c1x,c1y,c2x,c2y,eX,eY); cx2.stroke();
+            if(i%3===0){
+                const {speed,offset}=seeds[i], prog=(time*speed+offset)%1;
+                const ax=pt(-100,c1x,c2x,eX,prog),ay=pt(yO,c1y,c2y,eY,prog);
+                const ang=Math.atan2(pt(yO,c1y,c2y,eY,prog+.005)-ay,pt(-100,c1x,c2x,eX,prog+.005)-ax);
+                cx2.save(); cx2.globalAlpha=.9; cx2.translate(ax,ay); cx2.rotate(ang);
+                cx2.fillStyle='#fff'; cx2.beginPath();
+                cx2.moveTo(5,0); cx2.lineTo(-5,-3); cx2.lineTo(-5,3); cx2.fill();
+                cx2.restore();
+            }
+        }
+        cx2.globalAlpha=1;
+        drawLattice(ts*.001);
+        requestAnimationFrame(loop);
+    }
+    loop(0);
+</script>
 </body>
 </html>
