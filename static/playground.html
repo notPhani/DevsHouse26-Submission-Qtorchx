@@ -168,43 +168,55 @@
     .mb { height: 5px; border-radius: 2px; min-width: 2px; }
 
     /* ── VQE ── */
-    #tab-vqe { overflow-y: auto; padding: 18px; }
-    .vpage { max-width: 1080px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
-    .vtop { text-align: center; padding: 4px 0 8px; }
-    .vtop h1 { font-size: 17px; font-weight: 600; background: linear-gradient(90deg,#3498db,#9b59b6); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-    .vtop p { font-size: 11px; color: rgba(255,255,255,0.38); margin-top: 4px; }
-    .vgrid { display: grid; grid-template-columns: 1fr 1.15fr; gap: 14px; align-items: start; }
-    .vcol { display: flex; flex-direction: column; gap: 10px; }
-    .vcc { background: rgba(255,255,255,0.022); border: 1px solid rgba(255,255,255,0.06); border-radius: 5px; padding: 12px; }
-    .vcc.ideal { border-color: rgba(52,152,219,0.3); }
-    .vcc.noisy { border-color: rgba(155,89,182,0.3); }
-    .vch { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    #tab-vqe { overflow: hidden; padding: 18px; }
+    .vpage { height: 100%; min-height: 0; max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+    .vtop { text-align: center; padding: 6px 4px 2px; flex-shrink: 0; }
+    .vtop h1 { font-size: 21px; font-weight: 600; letter-spacing: -0.03em; background: linear-gradient(90deg,#d6fbff 0%,#4eb8ff 38%,#b47dff 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .vtop p { font-size: 12px; color: rgba(255,255,255,0.42); margin-top: 6px; }
+    .vgrid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.15fr); gap: 14px; align-items: stretch; flex: 1; min-height: 0; }
+    .vcol { flex: 1; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+    .vcc { flex: 1; display: flex; flex-direction: column; min-height: 0; background: linear-gradient(180deg,rgba(15,20,31,0.96),rgba(7,10,18,0.94)); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 14px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 24px 60px rgba(0,0,0,0.28); transition: opacity .14s linear, border-color .18s ease, box-shadow .18s ease; }
+    .vcc.ideal { border-color: rgba(82,198,255,0.26); box-shadow: inset 0 1px 0 rgba(171,238,255,0.05), 0 24px 60px rgba(0,0,0,0.3), 0 0 0 1px rgba(52,152,219,0.05); }
+    .vcc.noisy { border-color: rgba(191,128,255,0.28); box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 24px 60px rgba(0,0,0,0.32), 0 0 0 1px rgba(155,89,182,0.05); opacity: 1; }
+    .vch { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-shrink: 0; }
     .vch h3 { font-size: 11px; font-weight: 600; }
     .vch h3.ic { color: #3498db; } .vch h3.nc { color: #9b59b6; }
     .cstatus { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 600; }
     .cstatus.ready     { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.45); }
     .cstatus.running   { background: rgba(52,152,219,0.15); color: #3498db; }
     .cstatus.converged { background: rgba(46,204,113,0.15); color: #2ecc71; }
-    .circuit-svg { width: 100%; height: 155px; }
-    .gcrd { background: rgba(255,255,255,0.022); border: 1px solid rgba(255,255,255,0.06); border-radius: 5px; padding: 12px; }
-    .ghdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .circuit-svg { width: 100%; flex: 1; min-height: 230px; height: auto; display: block; }
+    .gcrd { flex: 1; display: flex; flex-direction: column; min-height: 0; background: linear-gradient(180deg,rgba(15,20,31,0.96),rgba(7,10,18,0.94)); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 14px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 24px 60px rgba(0,0,0,0.28); }
+    .ghdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-shrink: 0; }
     .ghdr h3 { font-size: 12px; font-weight: 600; }
     .gst { font-size: 10px; color: rgba(255,255,255,0.38); }
-    #comparison-chart { height: 210px !important; }
-    .vbtns { display: flex; gap: 7px; }
-    .vb { flex: 1; padding: 8px; border-radius: 3px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; transition: all .15s; }
+    #comparison-chart { width: 100% !important; flex: 1; min-height: 340px; height: auto !important; }
+    .vbtns { display: flex; gap: 10px; flex-shrink: 0; }
+    .vb { flex: 1; padding: 10px 12px; border-radius: 10px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; transition: all .15s; }
     .vb.vp { background: #3498db; color: #fff; }
     .vb.vp:hover { background: #2980b9; }
     .vb.vp:disabled { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.28); cursor: not-allowed; }
     .vb.vs { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.65); }
     .vb.vs:hover { background: rgba(255,255,255,0.1); color: #fff; }
-    .vmcard { background: rgba(255,255,255,0.022); border: 1px solid rgba(255,255,255,0.06); border-radius: 5px; padding: 12px; }
-    .vmhdr { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.65); margin-bottom: 8px; }
-    .vmg { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; }
-    .vmi { background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.05); border-radius: 3px; padding: 7px 9px; }
-    .vmil { font-size: 9px; color: rgba(255,255,255,0.38); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 3px; }
-    .vmiv { font-size: 14px; font-weight: 600; }
+    .vmcard { flex-shrink: 0; background: linear-gradient(180deg,rgba(14,20,31,0.96),rgba(8,11,19,0.95)); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 16px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 24px 60px rgba(0,0,0,0.28); }
+    .vmhdr { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.62); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 12px; }
+    .vmg { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
+    .vmi { background: rgba(255,255,255,0.018); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 14px 16px; min-height: 108px; display: flex; flex-direction: column; justify-content: space-between; }
+    .vmil { font-size: 10px; color: rgba(255,255,255,0.40); text-transform: uppercase; letter-spacing: .09em; margin-bottom: 8px; }
+    .vmiv { font-size: 24px; line-height: 1; font-weight: 700; letter-spacing: -0.03em; }
     .ic { color: #3498db; } .nc { color: #9b59b6; } .wc { color: #f39c12; }
+    @media (max-width: 1100px) {
+      #tab-vqe { overflow-y: auto; }
+      .vpage { height: auto; min-height: 100%; }
+      .vgrid { grid-template-columns: 1fr; }
+      .circuit-svg { min-height: 190px; }
+      #comparison-chart { min-height: 280px; }
+      .vmg { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width: 680px) {
+      .vmg { grid-template-columns: 1fr; }
+      .vmiv { font-size: 21px; }
+    }
     .hidden { display: none !important; }
   </style>
 </head>
@@ -1708,22 +1720,128 @@ loadRandom();
 
 class CircuitDraw {
   constructor(svgId,isNoisy){
-    this.svg=document.getElementById(svgId); this.isNoisy=isNoisy;
-    this.w=820; this.h=155;
+    this.svg=document.getElementById(svgId);
+    this.isNoisy=isNoisy;
+    this.uid=`${isNoisy?'n':'i'}-${Math.random().toString(36).slice(2,8)}`;
+    this.w=820;
+    this.h=280;
+    this.color=isNoisy?'#9b59b6':'#3498db';
+    this.pulseColor=isNoisy?'#ffd1ff':'#d0fbff';
+    this.baseWireStroke=isNoisy?'rgba(179,122,236,0.32)':'rgba(116,204,255,0.44)';
+    this.wireCoreStroke=isNoisy?'rgba(255,225,255,0.88)':'rgba(233,251,255,0.96)';
+    this.baseGateFill=isNoisy?'rgba(28,16,44,0.88)':'rgba(10,19,36,0.88)';
+    this.activeGateFill=isNoisy?'rgba(66,31,97,0.96)':'rgba(16,42,70,0.96)';
+    this.gateWidth=56;
+    this.gateHeight=40;
+    this.gateRadius=10;
+    this.tickerStep=20;
+    this.tickers=[];
+    this.wirePulses=[];
+    this.baseGlowNodes=[];
+    this.wireCoreNodes=[];
+    this.gateShells=[];
+    this.pulseRaf=0;
+    this.flickerRaf=0;
+    this.destroyed=false;
+    this.lastPulseStart=0;
+    this.svg.innerHTML='';
     this.svg.setAttribute('viewBox',`0 0 ${this.w} ${this.h}`);
-    this.svg.setAttribute('width','100%'); this.svg.setAttribute('height','100%');
+    this.svg.setAttribute('width','100%');
+    this.svg.setAttribute('height','100%');
+    this.svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+    this.svg.setAttribute('shape-rendering','geometricPrecision');
+    this.svg.style.transform='translateZ(0)';
+    this.svg.style.willChange='transform, opacity';
     this.drawBase();
+    this.startAmbientAnimation();
   }
   ns(tag){return document.createElementNS('http://www.w3.org/2000/svg',tag);}
   mk(tag,attrs){const el=this.ns(tag);Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));return el;}
+  safePathLength(path){try{return path.getTotalLength();}catch{return 760;}}
+  setBaseOpacity(node, opacity){
+    const val=opacity.toFixed(3);
+    node.setAttribute('opacity',val);
+    node.setAttribute('data-base-opacity',val);
+    this.baseGlowNodes.push(node);
+  }
+  buildDefs(){
+    this.defs=this.ns('defs');
+    const glowFilter=this.mk('filter',{id:`${this.uid}-glow`,x:'-45%',y:'-130%',width:'190%',height:'360%','color-interpolation-filters':'sRGB'});
+    glowFilter.appendChild(this.mk('feGaussianBlur',{in:'SourceAlpha',stdDeviation:this.isNoisy?'2.8':'2.3',result:'blurSoft'}));
+    glowFilter.appendChild(this.mk('feGaussianBlur',{in:'SourceAlpha',stdDeviation:this.isNoisy?'6.2':'5.0',result:'blurWide'}));
+    glowFilter.appendChild(this.mk('feFlood',{'flood-color':this.color,'flood-opacity':this.isNoisy?'0.70':'0.84',result:'softTint'}));
+    glowFilter.appendChild(this.mk('feFlood',{'flood-color':this.color,'flood-opacity':this.isNoisy?'0.16':'0.22',result:'wideTint'}));
+    glowFilter.appendChild(this.mk('feComposite',{in:'softTint',in2:'blurSoft',operator:'in',result:'softGlow'}));
+    glowFilter.appendChild(this.mk('feComposite',{in:'wideTint',in2:'blurWide',operator:'in',result:'wideGlow'}));
+    const glowMerge=this.mk('feMerge',{});
+    glowMerge.appendChild(this.mk('feMergeNode',{in:'wideGlow'}));
+    glowMerge.appendChild(this.mk('feMergeNode',{in:'softGlow'}));
+    glowMerge.appendChild(this.mk('feMergeNode',{in:'SourceGraphic'}));
+    glowFilter.appendChild(glowMerge);
+    const pulseFilter=this.mk('filter',{id:`${this.uid}-pulse-glow`,x:'-70%',y:'-150%',width:'240%',height:'400%','color-interpolation-filters':'sRGB'});
+    pulseFilter.appendChild(this.mk('feGaussianBlur',{in:'SourceAlpha',stdDeviation:'4.5',result:'pulseBlur'}));
+    pulseFilter.appendChild(this.mk('feFlood',{'flood-color':this.pulseColor,'flood-opacity':'0.96',result:'pulseTint'}));
+    pulseFilter.appendChild(this.mk('feComposite',{in:'pulseTint',in2:'pulseBlur',operator:'in',result:'pulseGlow'}));
+    const pulseMerge=this.mk('feMerge',{});
+    pulseMerge.appendChild(this.mk('feMergeNode',{in:'pulseGlow'}));
+    pulseMerge.appendChild(this.mk('feMergeNode',{in:'SourceGraphic'}));
+    pulseFilter.appendChild(pulseMerge);
+    const gateGradient=this.mk('linearGradient',{id:`${this.uid}-gate-fill`,x1:'0%',y1:'0%',x2:'0%',y2:'100%'});
+    gateGradient.appendChild(this.mk('stop',{offset:'0%','stop-color':this.isNoisy?'rgba(58,28,88,0.68)':'rgba(36,72,112,0.52)'}));
+    gateGradient.appendChild(this.mk('stop',{offset:'100%','stop-color':this.baseGateFill}));
+    this.defs.appendChild(glowFilter);
+    this.defs.appendChild(pulseFilter);
+    this.defs.appendChild(gateGradient);
+    this.svg.appendChild(this.defs);
+  }
+  registerPulsePath(path, delay, opacity){
+    const length=this.safePathLength(path);
+    const dash=Math.max(54,Math.min(140,length*0.18));
+    path.setAttribute('stroke-dasharray',`${dash.toFixed(1)} ${(length+dash).toFixed(1)}`);
+    path.setAttribute('stroke-dashoffset',`${(length+dash).toFixed(1)}`);
+    this.wirePulses.push({el:path,length,dash,delay,opacity});
+  }
   drawBase(){
-    const color=this.isNoisy?'#9b59b6':'#3498db';
-    const qY=[42,90,138]; const startX=55;
+    this.buildDefs();
+    this.wireLayer=this.mk('g',{});
+    this.gateLayer=this.mk('g',{});
+    this.pulseLayer=this.mk('g',{});
+    this.labelLayer=this.mk('g',{});
+    this.svg.appendChild(this.wireLayer);
+    this.svg.appendChild(this.gateLayer);
+    this.svg.appendChild(this.pulseLayer);
+    this.svg.appendChild(this.labelLayer);
+
+    const color=this.color;
+    const qY=[68,140,212];
+    const startX=55;
     qY.forEach((y,q)=>{
-      this.svg.appendChild(this.mk('line',{x1:20,y1:y,x2:this.w-10,y2:y,stroke:color,'stroke-width':2,opacity:0.3}));
+      const wire=this.mk('line',{
+        x1:'20',y1:y,x2:this.w-10,y2:y,fill:'none',stroke:this.baseWireStroke,'stroke-width':'2.6','stroke-linecap':'round',
+        'vector-effect':'non-scaling-stroke',filter:`url(#${this.uid}-glow)`
+      });
+      const wireCore=this.mk('line',{
+        x1:'20',y1:y,x2:this.w-10,y2:y,fill:'none',stroke:this.wireCoreStroke,'stroke-width':'1.35','stroke-linecap':'round',
+        'vector-effect':'non-scaling-stroke'
+      });
+      const pulse=this.mk('line',{
+        x1:'20',y1:y,x2:this.w-10,y2:y,fill:'none',stroke:this.pulseColor,'stroke-width':'3.6','stroke-linecap':'round',
+        'vector-effect':'non-scaling-stroke',opacity:'0',filter:`url(#${this.uid}-pulse-glow)`
+      });
+      this.wireLayer.appendChild(wire);
+      this.wireLayer.appendChild(wireCore);
+      this.pulseLayer.appendChild(pulse);
+      this.setBaseOpacity(wire,this.isNoisy?0.34:0.62);
+      this.setBaseOpacity(wireCore,this.isNoisy?0.62:0.92);
+      this.wireCoreNodes.push(wireCore);
+      this.registerPulsePath(pulse,q*55,this.isNoisy?0.72:0.92);
       const t=this.ns('text'); t.setAttribute('x',14); t.setAttribute('y',y+5);
-      t.setAttribute('fill','rgba(255,255,255,0.55)'); t.setAttribute('font-size','14');
-      t.setAttribute('font-weight','bold'); t.textContent=`q${q}`; this.svg.appendChild(t);
+      t.setAttribute('fill',this.isNoisy?'rgba(238,210,255,0.62)':'rgba(210,244,255,0.68)');
+      t.setAttribute('font-size','16');
+      t.setAttribute('font-weight','bold');
+      t.setAttribute('filter',`url(#${this.uid}-glow)`);
+      t.textContent=`q${q}`;
+      this.labelLayer.appendChild(t);
     });
     let x=startX; let pidx=0;
     for(let layer=0;layer<5;layer++){
@@ -1733,31 +1851,193 @@ class CircuitDraw {
     }
   }
   drawRY(x,y,pidx,color){
-    const g=this.ns('g'); g.setAttribute('id',(this.isNoisy?'n':'i')+'-g-'+pidx);
-    g.appendChild(this.mk('rect',{x:x-24,y:y-16,width:48,height:32,fill:'rgba(255,255,255,0.04)',stroke:color,'stroke-width':2,rx:3}));
-    const vt=this.ns('text'); vt.setAttribute('x',x); vt.setAttribute('y',y+5);
-    vt.setAttribute('text-anchor','middle'); vt.setAttribute('fill',color);
-    vt.setAttribute('font-size','13'); vt.setAttribute('font-weight','bold');
-    vt.setAttribute('id',(this.isNoisy?'n':'i')+'-v-'+pidx); vt.textContent='0.000';
-    g.appendChild(vt); this.svg.appendChild(g);
+    const clipId=`${this.uid}-clip-${pidx}`;
+    const clip=this.mk('clipPath',{id:clipId});
+    clip.appendChild(this.mk('rect',{x:x-20,y:y-12,width:40,height:24,rx:6}));
+    this.defs.appendChild(clip);
+
+    const g=this.ns('g');
+    g.setAttribute('id',(this.isNoisy?'n':'i')+'-g-'+pidx);
+    const shell=this.mk('rect',{
+      x:x-this.gateWidth/2,y:y-this.gateHeight/2,width:this.gateWidth,height:this.gateHeight,rx:this.gateRadius,
+      fill:`url(#${this.uid}-gate-fill)`,stroke:color,'stroke-width':'2',
+      filter:`url(#${this.uid}-glow)`,'vector-effect':'non-scaling-stroke'
+    });
+    const accent=this.mk('path',{
+      d:`M ${x-19} ${y-12} H ${x+19}`,fill:'none',stroke:this.pulseColor,'stroke-width':'1.6',
+      opacity:this.isNoisy?'0.48':'0.62','stroke-linecap':'round'
+    });
+    const slotWrap=this.mk('g',{'clip-path':`url(#${clipId})`});
+    const track=this.mk('g',{});
+    track.style.willChange='transform, filter, opacity';
+    const texts=Array.from({length:5},(_,idx)=>{
+      const txt=this.mk('text',{
+        x,y:y+5+(idx-1)*this.tickerStep,'text-anchor':'middle',fill:color,
+        'font-size':'14','font-weight':'700'
+      });
+      txt.textContent='0.000';
+      track.appendChild(txt);
+      return txt;
+    });
+    slotWrap.appendChild(track);
+    g.appendChild(shell);
+    g.appendChild(accent);
+    g.appendChild(slotWrap);
+    this.gateLayer.appendChild(g);
+    this.gateShells.push(shell);
+    this.tickers[pidx]={shell,track,texts,currentValue:0,renderValue:0,raf:0};
   }
   drawCNOT(x,cy,ty,color){
-    this.svg.appendChild(this.mk('circle',{cx:x,cy,r:5,fill:color}));
-    this.svg.appendChild(this.mk('line',{x1:x,y1:cy,x2:x,y2:ty,stroke:color,'stroke-width':2}));
-    this.svg.appendChild(this.mk('circle',{cx:x,cy:ty,r:12,fill:'none',stroke:color,'stroke-width':2}));
-    const dx=8;
-    [[x-dx,ty-dx,x+dx,ty+dx],[x+dx,ty-dx,x-dx,ty+dx]].forEach(([x1,y1,x2,y2])=>this.svg.appendChild(this.mk('line',{x1,y1,x2,y2,stroke:color,'stroke-width':2})));
+    const link=this.mk('line',{
+      x1:x,y1:cy,x2:x,y2:ty,fill:'none',stroke:this.baseWireStroke,'stroke-width':'2.5','stroke-linecap':'round',
+      'vector-effect':'non-scaling-stroke',filter:`url(#${this.uid}-glow)`
+    });
+    const linkCore=this.mk('line',{
+      x1:x,y1:cy,x2:x,y2:ty,fill:'none',stroke:this.wireCoreStroke,'stroke-width':'1.3','stroke-linecap':'round',
+      'vector-effect':'non-scaling-stroke'
+    });
+    const pulse=this.mk('line',{
+      x1:x,y1:cy,x2:x,y2:ty,fill:'none',stroke:this.pulseColor,'stroke-width':'3.3','stroke-linecap':'round',
+      'vector-effect':'non-scaling-stroke',opacity:'0',filter:`url(#${this.uid}-pulse-glow)`
+    });
+    this.wireLayer.appendChild(link);
+    this.wireLayer.appendChild(linkCore);
+    this.pulseLayer.appendChild(pulse);
+    this.setBaseOpacity(link,this.isNoisy?0.30:0.54);
+    this.setBaseOpacity(linkCore,this.isNoisy?0.58:0.88);
+    this.wireCoreNodes.push(linkCore);
+    this.registerPulsePath(pulse,70+(x/this.w)*200,this.isNoisy?0.68:0.86);
+
+    const controlHalo=this.mk('circle',{cx:x,cy,r:10,fill:'none',stroke:this.pulseColor,'stroke-width':'1.2',opacity:this.isNoisy?'0.25':'0.18'});
+    const control=this.mk('circle',{cx:x,cy,r:5.5,fill:color,filter:`url(#${this.uid}-glow)`});
+    this.gateLayer.appendChild(controlHalo);
+    this.gateLayer.appendChild(control);
+    this.gateLayer.appendChild(this.mk('circle',{cx:x,cy:ty,r:13,fill:'none',stroke:color,'stroke-width':'2',filter:`url(#${this.uid}-glow)`}));
+    const dx=9;
+    [[x-dx,ty-dx,x+dx,ty+dx],[x+dx,ty-dx,x-dx,ty+dx]].forEach(([x1,y1,x2,y2])=>this.gateLayer.appendChild(this.mk('line',{x1,y1,x2,y2,stroke:color,'stroke-width':'2',filter:`url(#${this.uid}-glow)`})));
   }
-  update(params){
-    params.forEach((v,i)=>{
-      const el=document.getElementById((this.isNoisy?'n':'i')+'-v-'+i);
-      if(!el) return; el.textContent=v.toFixed(3);
-      const g=document.getElementById((this.isNoisy?'n':'i')+'-g-'+i);
-      if(g){
-        const r=g.querySelector('rect');
-        if(r){r.setAttribute('fill',`rgba(${this.isNoisy?'155,89,182':'52,152,219'},0.15)`);setTimeout(()=>r.setAttribute('fill','rgba(255,255,255,0.04)'),250);}
+  resetTicker(slot, value){
+    const text=value.toFixed(3);
+    slot.currentValue=value;
+    slot.renderValue=value;
+    slot.texts.forEach(el=>{el.textContent=text;});
+    slot.track.setAttribute('transform','translate(0 0)');
+    slot.track.setAttribute('opacity','1');
+    slot.track.style.filter='none';
+  }
+  animateTicker(slot, target){
+    if(slot.raf) cancelAnimationFrame(slot.raf);
+    const current=Number.isFinite(slot.renderValue)?slot.renderValue:(Number.isFinite(slot.currentValue)?slot.currentValue:0);
+    if(Math.abs(target-current)<0.0005){ this.resetTicker(slot,target); return; }
+    slot.currentValue=target;
+    const direction=target>=current?1:-1;
+    const spin=Math.max(0.22,Math.min(1.25,Math.abs(target-current)*1.9));
+    const frameValues=[
+      current-direction*spin,
+      current,
+      current+direction*spin*0.52,
+      target+direction*spin*0.18,
+      target
+    ];
+    slot.texts.forEach((el,idx)=>{el.textContent=frameValues[idx].toFixed(3);});
+    const travel=(frameValues.length-2)*this.tickerStep;
+    const start=performance.now();
+    const run=now=>{
+      const p=Math.min(1,(now-start)/200);
+      const eased=1-Math.pow(1-p,3);
+      const blur=Math.sin(Math.PI*p)*2.6;
+      const opacity=0.78+0.22*(1-Math.abs(p-0.5)*2);
+      slot.renderValue=current+(target-current)*eased;
+      slot.track.setAttribute('transform',`translate(0 ${(-travel*eased).toFixed(2)})`);
+      slot.track.setAttribute('opacity',opacity.toFixed(3));
+      slot.track.style.filter=blur>0.05?`blur(${blur.toFixed(2)}px)`:'none';
+      if(p<1){
+        slot.raf=requestAnimationFrame(run);
+      }else{
+        slot.raf=0;
+        this.resetTicker(slot,target);
+      }
+    };
+    slot.raf=requestAnimationFrame(run);
+  }
+  pulseGateShell(shell){
+    if(shell._pulseTimer) clearTimeout(shell._pulseTimer);
+    shell.setAttribute('fill',this.activeGateFill);
+    shell.setAttribute('stroke-width','2.55');
+    shell._pulseTimer=setTimeout(()=>{
+      if(this.destroyed) return;
+      shell.setAttribute('fill',`url(#${this.uid}-gate-fill)`);
+      shell.setAttribute('stroke-width','2');
+    },180);
+  }
+  triggerSignalPulse(){
+    this.lastPulseStart=performance.now();
+    if(!this.pulseRaf) this.pulseRaf=requestAnimationFrame(ts=>this.animatePulseFrame(ts));
+  }
+  animatePulseFrame(ts){
+    if(this.destroyed){ this.pulseRaf=0; return; }
+    const duration=this.isNoisy?620:560;
+    let active=false;
+    this.wirePulses.forEach(pulse=>{
+      const local=(ts-this.lastPulseStart-pulse.delay)/duration;
+      if(local>=-0.04&&local<=1.04){
+        active=true;
+        const p=Math.min(1,Math.max(0,local));
+        const eased=p<0.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+        const travel=pulse.length+pulse.dash;
+        const offset=travel-eased*(travel+pulse.dash);
+        pulse.el.setAttribute('stroke-dashoffset',offset.toFixed(2));
+        pulse.el.setAttribute('opacity',(Math.sin(p*Math.PI)*pulse.opacity).toFixed(3));
+      }else{
+        pulse.el.setAttribute('opacity','0');
       }
     });
+    if(active) this.pulseRaf=requestAnimationFrame(next=>this.animatePulseFrame(next));
+    else this.pulseRaf=0;
+  }
+  startAmbientAnimation(){
+    if(!this.isNoisy){
+      this.baseGlowNodes.forEach(node=>{
+        const base=node.getAttribute('data-base-opacity')||'0.48';
+        node.setAttribute('opacity',base);
+      });
+      return;
+    }
+    let nextTick=0;
+    const flicker=ts=>{
+      if(this.destroyed) return;
+      if(ts>=nextTick){
+        nextTick=ts+48+Math.random()*76;
+        this.baseGlowNodes.forEach((node,idx)=>{
+          const base=parseFloat(node.getAttribute('data-base-opacity')||'0.24');
+          const wobble=(Math.random()*0.24)+(Math.sin(ts*0.018+idx*1.11)+1)*0.06;
+          node.setAttribute('opacity',Math.max(0.12,Math.min(0.72,base+wobble)).toFixed(3));
+        });
+      }
+      this.flickerRaf=requestAnimationFrame(flicker);
+    };
+    this.flickerRaf=requestAnimationFrame(flicker);
+  }
+  update(params){
+    let changed=false;
+    params.forEach((v,i)=>{
+      const slot=this.tickers[i];
+      if(!slot) return;
+      this.animateTicker(slot,v);
+      this.pulseGateShell(slot.shell);
+      changed=true;
+    });
+    if(changed) this.triggerSignalPulse();
+  }
+  destroy(){
+    this.destroyed=true;
+    if(this.pulseRaf) cancelAnimationFrame(this.pulseRaf);
+    if(this.flickerRaf) cancelAnimationFrame(this.flickerRaf);
+    this.tickers.forEach(slot=>{
+      if(slot?.raf) cancelAnimationFrame(slot.raf);
+      if(slot?.shell?._pulseTimer) clearTimeout(slot.shell._pulseTimer);
+    });
+    if(this.svg) this.svg.innerHTML='';
   }
 }
 
@@ -1795,17 +2075,38 @@ function initVQEChart(){
 class VQECtrl {
   constructor(){
     this.running=false; this.iF=0; this.nF=0; this.speed=130;
-    this.iCirc=new CircuitDraw('ideal-circuit-svg',false);
-    this.nCirc=new CircuitDraw('noisy-circuit-svg',true);
+    this.nextNoisyPanelFlickerAt=0;
+    this.noisyCard=document.querySelector('.vcc.noisy');
+    this.mountCircuits();
     this.iCirc.update(animData.ideal[0].params);
     this.nCirc.update(animData.noisy[0].params);
+  }
+  mountCircuits(){
+    if(this.iCirc) this.iCirc.destroy();
+    if(this.nCirc) this.nCirc.destroy();
+    this.iCirc=new CircuitDraw('ideal-circuit-svg',false);
+    this.nCirc=new CircuitDraw('noisy-circuit-svg',true);
+  }
+  setNoisyPanelOpacity(value){
+    if(!this.noisyCard) this.noisyCard=document.querySelector('.vcc.noisy');
+    if(this.noisyCard) this.noisyCard.style.opacity=value;
+  }
+  flickerNoisyPanel(ts=performance.now()){
+    if(!this.running) return;
+    if(ts<this.nextNoisyPanelFlickerAt) return;
+    this.nextNoisyPanelFlickerAt=ts+75+Math.random()*90;
+    this.setNoisyPanelOpacity((0.7+Math.random()*0.3).toFixed(2));
+  }
+  stabilizeNoisyPanel(){
+    this.nextNoisyPanelFlickerAt=0;
+    this.setNoisyPanelOpacity('1');
   }
   async start(){
     if(this.running) return;
     loadRandom();
     this.running=true; this.iF=0; this.nF=0;
-    this.iCirc=new CircuitDraw('ideal-circuit-svg',false);
-    this.nCirc=new CircuitDraw('noisy-circuit-svg',true);
+    this.mountCircuits();
+    this.stabilizeNoisyPanel();
     setSt('ideal-circuit-status','running','Optimizing...');
     setSt('noisy-circuit-status','running','Optimizing...');
     document.getElementById('graph-status').textContent=`${curProf.name} · ${curPat.name}`;
@@ -1817,6 +2118,7 @@ class VQECtrl {
   }
   async loop(){
     while(this.running){
+      this.flickerNoisyPanel();
       const iDone=this.iF>=animData.ideal.length, nDone=this.nF>=animData.noisy.length;
       if(iDone&&nDone){this.complete();break;}
       if(!iDone){
@@ -1838,6 +2140,7 @@ class VQECtrl {
   }
   complete(){
     this.running=false;
+    this.stabilizeNoisyPanel();
     document.getElementById('graph-status').textContent=`${curProf.name} · ${curPat.name} — Complete!`;
     document.getElementById('run-comparison-btn').disabled=false;
     const iF=animData.ideal[animData.ideal.length-1], nF=animData.noisy[animData.noisy.length-1];
@@ -1850,10 +2153,12 @@ class VQECtrl {
   }
   reset(){
     this.running=false; this.iF=0; this.nF=0;
+    this.stabilizeNoisyPanel();
     setSt('ideal-circuit-status','ready','Ready'); setSt('noisy-circuit-status','ready','Ready');
     document.getElementById('graph-status').textContent='Click Run to start...';
     document.getElementById('metrics-card').classList.add('hidden');
     document.getElementById('run-comparison-btn').disabled=false;
+    if(!this.iCirc||!this.nCirc) this.mountCircuits();
     this.iCirc.update(animData.ideal[0].params); this.nCirc.update(animData.noisy[0].params);
     vqeChart.data.labels=[]; vqeChart.data.datasets[0].data=[]; vqeChart.data.datasets[1].data=[];
     vqeChart.update('none');
