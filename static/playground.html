@@ -173,6 +173,17 @@
     .vtop { text-align: center; padding: 6px 4px 2px; flex-shrink: 0; }
     .vtop h1 { font-size: 21px; font-weight: 600; letter-spacing: -0.03em; background: linear-gradient(90deg,#d6fbff 0%,#4eb8ff 38%,#b47dff 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
     .vtop p { font-size: 12px; color: rgba(255,255,255,0.42); margin-top: 6px; }
+    .vtoolbar { display: flex; gap: 12px; justify-content: center; align-items: stretch; flex-wrap: wrap; margin-top: 14px; }
+    .vsel { min-width: 230px; display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; text-align: left; background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; }
+    .vsel label { font-size: 9px; color: rgba(255,255,255,0.42); text-transform: uppercase; letter-spacing: .12em; }
+    .vsel-row { display: flex; align-items: center; gap: 10px; }
+    .vsel select { flex: 1; background: rgba(0,0,0,0.34); border: 1px solid rgba(255,255,255,0.1); color: #e8ecf5; border-radius: 8px; padding: 8px 10px; font-size: 11px; outline: none; }
+    .vpill { display: inline-flex; align-items: center; justify-content: center; min-width: 128px; padding: 8px 10px; border-radius: 999px; font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; border: 1px solid rgba(52,152,219,0.28); background: rgba(52,152,219,0.12); color: #7ed5ff; }
+    .vpill.excited { border-color: rgba(155,89,182,0.32); background: rgba(155,89,182,0.12); color: #d4b4ff; }
+    .vstrip { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; min-width: min(720px,100%); }
+    .vsum { text-align: left; padding: 12px 14px; background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; }
+    .vsum-k { font-size: 9px; color: rgba(255,255,255,0.42); text-transform: uppercase; letter-spacing: .11em; margin-bottom: 8px; }
+    .vsum-v { font-size: 15px; font-weight: 600; color: #f3f7ff; line-height: 1.2; }
     .vgrid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.15fr); gap: 14px; align-items: stretch; flex: 1; min-height: 0; }
     .vcol { flex: 1; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
     .vcc { flex: 1; display: flex; flex-direction: column; min-height: 0; background: linear-gradient(180deg,rgba(15,20,31,0.96),rgba(7,10,18,0.94)); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 14px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 24px 60px rgba(0,0,0,0.28); transition: opacity .14s linear, border-color .18s ease, box-shadow .18s ease; }
@@ -208,12 +219,18 @@
     @media (max-width: 1100px) {
       #tab-vqe { overflow-y: auto; }
       .vpage { height: auto; min-height: 100%; }
+      .vstrip { grid-template-columns: repeat(2,minmax(0,1fr)); min-width: 100%; }
       .vgrid { grid-template-columns: 1fr; }
       .circuit-svg { min-height: 190px; }
       #comparison-chart { min-height: 280px; }
       .vmg { grid-template-columns: repeat(2,minmax(0,1fr)); }
     }
     @media (max-width: 680px) {
+      .vtoolbar { flex-direction: column; align-items: stretch; }
+      .vsel { min-width: 100%; }
+      .vsel-row { flex-direction: column; align-items: stretch; }
+      .vpill { width: 100%; }
+      .vstrip { grid-template-columns: 1fr; }
       .vmg { grid-template-columns: 1fr; }
       .vmiv { font-size: 21px; }
     }
@@ -418,7 +435,26 @@
   <div id="tab-vqe" class="tab-panel">
     <div class="vpage">
       <div class="vtop">
-        <h1>VQE Live Demo: Ideal vs Noisy</h1>
+        <h1>VQE Energy Target Demo</h1>
+        <div class="vtoolbar">
+          <div class="vsel">
+            <label for="vqe-level-select">Energy Target</label>
+            <div class="vsel-row">
+              <select id="vqe-level-select">
+                <option value="0">E0 &middot; Ground State</option>
+                <option value="1">E1 &middot; 1st Excited State</option>
+                <option value="2" selected>E2 &middot; 2nd Excited State</option>
+              </select>
+              <span id="vqe-mode-pill" class="vpill excited">Excited-state target</span>
+            </div>
+          </div>
+          <div class="vstrip">
+            <div class="vsum"><div class="vsum-k">Target</div><div class="vsum-v" id="vqe-target-label">E2 &middot; 2nd Excited State</div></div>
+            <div class="vsum"><div class="vsum-k">Solver</div><div class="vsum-v" id="vqe-solver-label">VQD</div></div>
+            <div class="vsum"><div class="vsum-k">Exact Energy</div><div class="vsum-v" id="vqe-reference-energy">--</div></div>
+            <div class="vsum"><div class="vsum-k">Gap From E0</div><div class="vsum-v" id="vqe-gap-energy">--</div></div>
+          </div>
+        </div>
         <p>H₂ molecule optimization — watch noise affect convergence in real time · 25 random scenarios</p>
       </div>
       <div class="vgrid">
@@ -436,13 +472,13 @@
           <div class="gcrd">
             <div class="ghdr"><h3>Energy Convergence</h3><span id="graph-status" class="gst">Click Run to start...</span></div>
             <canvas id="comparison-chart"></canvas>
-          </div>
-          <div class="vbtns">
-            <button id="run-comparison-btn" class="vb vp">Run Comparison</button>
-            <button id="reset-demo-btn" class="vb vs">Reset</button>
+            <div class="vbtns" style="margin-top:10px">
+              <button id="run-comparison-btn" class="vb vp">Run Comparison</button>
+              <button id="reset-demo-btn" class="vb vs">Reset</button>
+            </div>
           </div>
           <div class="vmcard hidden" id="metrics-card">
-            <div class="vmhdr">Results Summary</div>
+            <div class="vmhdr" id="metrics-header">Results Summary</div>
             <div class="vmg">
               <div class="vmi"><div class="vmil">Ideal Iterations</div><div class="vmiv ic" id="ideal-iters">--</div></div>
               <div class="vmi"><div class="vmil">Noisy Iterations</div><div class="vmiv nc" id="noisy-iters">--</div></div>
@@ -1682,41 +1718,149 @@ function hideResults(){const r=document.getElementById('cmpResults');r.classList
 // ════════════════════════════════════════════════════════════
 // VQE DEMO
 // ════════════════════════════════════════════════════════════
-const GSE=-1.137283834;
+const VQE_DEFAULT_LEVEL=2;
+const VQE_FALLBACK_EXACT=[-1.15961532,-0.54965324,-0.53820545];
 const PARAM_PROFILES=[
-  {name:"Fast Learner",idealStart:[0.5,2.1,1.3,0.8,2.9,1.7,0.4,2.5,1.1,0.9,2.3,1.5,0.7,2.0,1.4],idealTarget:[1.23,0.87,2.45,0.65,2.78,1.92,0.34,2.56,1.08,0.98,2.21,1.67,0.54,1.89,1.52],noisyTarget:[1.19,0.92,2.50,0.71,2.81,1.89,0.39,2.61,1.14,1.03,2.18,1.71,0.58,1.93,1.48],idealLR:0.18,noisyLR:0.08},
-  {name:"Slow Starter",idealStart:[0.2,2.5,0.8,1.5,3.0,1.2,0.3,2.8,0.7,1.3,2.7,1.1,0.9,2.2,1.0],idealTarget:[1.25,0.85,2.48,0.63,2.82,1.94,0.32,2.59,1.05,1.00,2.19,1.69,0.52,1.87,1.54],noisyTarget:[1.21,0.90,2.53,0.69,2.87,1.90,0.38,2.65,1.11,1.06,2.14,1.75,0.57,1.92,1.50],idealLR:0.12,noisyLR:0.05},
-  {name:"Balanced",idealStart:[0.6,2.0,1.4,0.9,2.8,1.6,0.5,2.6,1.2,1.0,2.4,1.4,0.7,2.1,1.5],idealTarget:[1.22,0.88,2.44,0.66,2.75,1.91,0.35,2.55,1.09,0.97,2.23,1.66,0.55,1.90,1.51],noisyTarget:[1.18,0.93,2.49,0.72,2.80,1.87,0.41,2.60,1.15,1.03,2.18,1.72,0.60,1.95,1.47],idealLR:0.15,noisyLR:0.07},
-  {name:"Near Optimal",idealStart:[1.0,1.2,2.2,0.7,2.5,1.8,0.5,2.4,1.0,0.9,2.4,1.6,0.6,1.9,1.5],idealTarget:[1.21,0.89,2.42,0.68,2.72,1.90,0.37,2.54,1.11,0.96,2.25,1.64,0.57,1.91,1.50],noisyTarget:[1.17,0.94,2.48,0.74,2.77,1.86,0.43,2.60,1.17,1.02,2.20,1.70,0.62,1.96,1.46],idealLR:0.20,noisyLR:0.10},
-  {name:"Far from Target",idealStart:[0.1,2.8,0.5,1.8,3.1,0.9,0.2,2.9,0.6,1.5,2.9,0.8,1.0,2.3,0.9],idealTarget:[1.24,0.86,2.46,0.64,2.79,1.93,0.33,2.57,1.07,0.99,2.22,1.68,0.53,1.88,1.53],noisyTarget:[1.20,0.91,2.51,0.70,2.84,1.88,0.40,2.63,1.13,1.05,2.17,1.74,0.59,1.94,1.49],idealLR:0.14,noisyLR:0.06}
-];
-const PATTERNS=[
-  {name:"Smooth Exponential",iIter:40,nIter:50,iCurve:(i)=>GSE+0.35*Math.exp(-i/7)-0.001,nCurve:(i,n)=>GSE+0.35*Math.exp(-i/9)+0.005+(Math.random()-0.5)*0.008*(1-i/n)},
-  {name:"Jagged with Spikes",iIter:50,nIter:60,iCurve:(i)=>GSE+0.4*Math.exp(-i/8)-0.002,nCurve:(i,n)=>{const b=GSE+0.4*Math.exp(-i/10)+0.006+(Math.random()-0.5)*0.015*(1-i/n);const sp=(i>20&&i<45&&Math.random()>0.92)?(Math.random()-0.5)*0.3:0;return b+sp;}},
-  {name:"Plateau Midway",iIter:35,nIter:48,iCurve:(i)=>{if(i<15)return GSE+0.3*Math.exp(-i/5);if(i<25)return GSE+0.05;return GSE+0.05*Math.exp(-(i-25)/4)-0.001;},nCurve:(i,n)=>{const ns=(Math.random()-0.5)*0.01*(1-i/n);if(i<20)return GSE+0.3*Math.exp(-i/7)+0.007+ns;if(i<35)return GSE+0.08+ns*2;return GSE+0.08*Math.exp(-(i-35)/5)+0.002+ns;}},
-  {name:"Oscillating Descent",iIter:45,nIter:55,iCurve:(i)=>GSE+0.35*Math.exp(-i/8)-0.001+0.02*Math.sin(i/3)*Math.exp(-i/20),nCurve:(i,n)=>GSE+0.35*Math.exp(-i/10)+0.006+0.04*Math.sin(i/2.5)*Math.exp(-i/15)+(Math.random()-0.5)*0.012*(1-i/n)},
-  {name:"Step-wise Drops",iIter:42,nIter:52,iCurve:(i)=>{const steps=[{e:10,v:-0.9},{e:20,v:-1.05},{e:30,v:-1.12},{e:42,v:-1.135}];for(const s of steps)if(i<=s.e)return s.v+(Math.random()-0.5)*0.005;return GSE-0.002;},nCurve:(i)=>{const steps=[{e:15,v:-0.85},{e:28,v:-1.02},{e:40,v:-1.10},{e:52,v:-1.130}];for(const s of steps)if(i<=s.e)return s.v+(Math.random()-0.5)*0.015;return GSE+0.003;}}
+  {idealStart:[0.5,2.1,1.3,0.8,2.9,1.7,0.4,2.5,1.1,0.9,2.3,1.5,0.7,2.0,1.4],idealTarget:[1.23,0.87,2.45,0.65,2.78,1.92,0.34,2.56,1.08,0.98,2.21,1.67,0.54,1.89,1.52],noisyTarget:[1.19,0.92,2.50,0.71,2.81,1.89,0.39,2.61,1.14,1.03,2.18,1.71,0.58,1.93,1.48],idealLR:0.18,noisyLR:0.08},
+  {idealStart:[0.2,2.5,0.8,1.5,3.0,1.2,0.3,2.8,0.7,1.3,2.7,1.1,0.9,2.2,1.0],idealTarget:[1.25,0.85,2.48,0.63,2.82,1.94,0.32,2.59,1.05,1.00,2.19,1.69,0.52,1.87,1.54],noisyTarget:[1.21,0.90,2.53,0.69,2.87,1.90,0.38,2.65,1.11,1.06,2.14,1.75,0.57,1.92,1.50],idealLR:0.12,noisyLR:0.05},
+  {idealStart:[1.0,1.2,2.2,0.7,2.5,1.8,0.5,2.4,1.0,0.9,2.4,1.6,0.6,1.9,1.5],idealTarget:[1.21,0.89,2.42,0.68,2.72,1.90,0.37,2.54,1.11,0.96,2.25,1.64,0.57,1.91,1.50],noisyTarget:[1.17,0.94,2.48,0.74,2.77,1.86,0.43,2.60,1.17,1.02,2.20,1.70,0.62,1.96,1.46],idealLR:0.20,noisyLR:0.10}
 ];
 
-let curProf=null, curPat=null, animData=null;
-function loadRandom(){
-  const pi=Math.floor(Math.random()*PARAM_PROFILES.length);
-  const pai=Math.floor(Math.random()*PATTERNS.length);
-  curProf=PARAM_PROFILES[pi]; curPat=PATTERNS[pai];
-  const iF=[], nF=[];
-  let ip=[...curProf.idealStart], np=[...curProf.idealStart];
-  for(let i=0;i<=curPat.iIter;i++){
-    ip=ip.map((p,idx)=>p+(curProf.idealTarget[idx]-p)*curProf.idealLR);
-    iF.push({iteration:i,params:[...ip],energy:curPat.iCurve(i,curPat.iIter)});
-  }
-  for(let i=0;i<=curPat.nIter;i++){
-    np=np.map((p,idx)=>p+(curProf.noisyTarget[idx]-p)*curProf.noisyLR+(Math.random()-0.5)*0.1*(1-i/curPat.nIter));
-    nF.push({iteration:i,params:[...np],energy:curPat.nCurve(i,curPat.nIter)});
-  }
-  animData={ideal:iF,noisy:nF};
-  return animData;
+let animData=null;
+let vqeCurrentDemo=null;
+let vqeGuideLines={ground:null,target:null,targetLabel:'Target',method:'VQE'};
+
+function clampLevel(level){
+  const parsed=Number(level);
+  if(!Number.isFinite(parsed)) return 0;
+  return Math.max(0,Math.min(2,Math.round(parsed)));
 }
-loadRandom();
+
+function getVQEProfile(level){
+  return PARAM_PROFILES[clampLevel(level)%PARAM_PROFILES.length];
+}
+
+function buildFallbackCurve(exactEnergy, level, noisy){
+  const count=300;
+  const out=[];
+  for(let i=0;i<count;i++){
+    const progress=i/(count-1);
+    const base=exactEnergy+(0.34+0.05*level)*Math.exp(-i/(22+level*5));
+    const wave=(0.006+level*0.002)*Math.sin(progress*Math.PI*(noisy?6:4.5))*Math.exp(-2.4*progress);
+    const lift=noisy?(0.0045+0.0025*level)*(0.2+0.8*Math.pow(progress,0.82)):0;
+    out.push(base+wave+lift);
+  }
+  return out;
+}
+
+function buildFallbackDemo(level){
+  const exactEnergy=VQE_FALLBACK_EXACT[level];
+  return {
+    level,
+    state_key:`E${level}`,
+    label:level===0?'Ground State':(level===1?'1st Excited State':'2nd Excited State'),
+    method:level===0?'VQE':'VQD',
+    vqd_energy:exactEnergy+(level===0?0.000003:0.013-0.002*level),
+    exact_energy:exactEnergy,
+    error_abs:level===0?0.000003:(0.013-0.002*level),
+    gap_from_ground:exactEnergy-VQE_FALLBACK_EXACT[0],
+    ideal_curve:buildFallbackCurve(exactEnergy,level,false),
+    noisy_curve:buildFallbackCurve(exactEnergy,level,true),
+    iterations:{ideal:299,noisy:299},
+    levels:VQE_FALLBACK_EXACT.map((energy,idx)=>({
+      level:idx,
+      state_key:`E${idx}`,
+      label:idx===0?'Ground State':(idx===1?'1st Excited State':'2nd Excited State'),
+      method:idx===0?'VQE':'VQD',
+      exact_energy:energy,
+      vqd_energy:energy,
+      error_abs:0,
+      gap_from_ground:energy-VQE_FALLBACK_EXACT[0]
+    })),
+    metadata:{epochs:300,beta:8,source:'frontend fallback',molecule:'H2',basis:'STO-3G'}
+  };
+}
+
+async function fetchVQEDemo(level){
+  try{
+    const resp=await fetch(`${API}/vqe-demo?level=${clampLevel(level)}`);
+    if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return await resp.json();
+  }catch(err){
+    console.warn('VQE demo fallback',err);
+    return buildFallbackDemo(clampLevel(level));
+  }
+}
+
+function buildParamFrames(start,target,lr,count,jitterScale=0){
+  const frames=[];
+  const total=Math.max(1,count-1);
+  let params=[...start];
+  for(let i=0;i<count;i++){
+    const progress=i/total;
+    params=params.map((p,idx)=>{
+      const jitter=jitterScale*Math.sin((i+1)*(0.45+idx*0.03)+idx*0.8)*Math.pow(1-progress,1.15);
+      return p+(target[idx]-p)*lr+jitter;
+    });
+    frames.push({iteration:i,params:[...params]});
+  }
+  return frames;
+}
+
+function buildVQEAnimData(bundle){
+  const profile=getVQEProfile(bundle.level);
+  const idealFrames=buildParamFrames(profile.idealStart,profile.idealTarget,profile.idealLR,bundle.ideal_curve.length,0);
+  const noisyFrames=buildParamFrames(profile.idealStart,profile.noisyTarget,profile.noisyLR,bundle.noisy_curve.length,0.05+bundle.level*0.018);
+  return {
+    level:bundle.level,
+    target:bundle,
+    ideal:idealFrames.map((frame,idx)=>({...frame,energy:bundle.ideal_curve[idx]})),
+    noisy:noisyFrames.map((frame,idx)=>({...frame,energy:bundle.noisy_curve[idx]})),
+  };
+}
+
+function setVQEModePill(bundle){
+  const pill=document.getElementById('vqe-mode-pill');
+  if(!pill) return;
+  const excited=bundle.method!=='VQE';
+  pill.textContent=excited?'Excited-state target':'Ground-state target';
+  pill.classList.toggle('excited',excited);
+}
+
+function setVQESummary(bundle){
+  vqeCurrentDemo=bundle;
+  set('vqe-target-label',`${bundle.state_key} · ${bundle.label}`);
+  set('vqe-solver-label',bundle.method);
+  set('vqe-reference-energy',`${bundle.exact_energy.toFixed(6)} Ha`);
+  set('vqe-gap-energy',`${bundle.gap_from_ground.toFixed(6)} Ha`);
+  setVQEModePill(bundle);
+  const hdr=document.getElementById('metrics-header');
+  if(hdr) hdr.textContent=`Results Summary · ${bundle.state_key}`;
+  const groundRef=bundle.levels&&bundle.levels.length?bundle.levels[0].exact_energy:bundle.exact_energy;
+  vqeGuideLines={ground:groundRef,target:bundle.exact_energy,targetLabel:bundle.state_key,method:bundle.method};
+}
+
+function configureVQEChart(bundle){
+  if(!vqeChart) return;
+  vqeChart.data.datasets[0].label=`Ideal ${bundle.method}`;
+  vqeChart.data.datasets[1].label=`Noisy ${bundle.method}`;
+  const vals=[...bundle.ideal_curve,...bundle.noisy_curve,bundle.exact_energy];
+  if(Number.isFinite(vqeGuideLines.ground)) vals.push(vqeGuideLines.ground);
+  const min=Math.min(...vals);
+  const max=Math.max(...vals);
+  const pad=Math.max(0.03,(max-min)*0.16);
+  vqeChart.options.scales.y.min=Number((min-pad).toFixed(3));
+  vqeChart.options.scales.y.max=Number((max+pad).toFixed(3));
+  vqeChart.update('none');
+}
+
+function resetVQEPlot(){
+  if(!vqeChart) return;
+  vqeChart.data.labels=[];
+  vqeChart.data.datasets[0].data=[];
+  vqeChart.data.datasets[1].data=[];
+  vqeChart.update('none');
+}
 
 class CircuitDraw {
   constructor(svgId,isNoisy){
@@ -2167,11 +2311,231 @@ class VQECtrl {
 function setSt(id,cls,txt){const el=document.getElementById(id);el.className='cstatus '+cls;el.textContent=txt;}
 function set(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
 
-window.addEventListener('load',()=>{
-  initVQEChart();
-  vCtrl=new VQECtrl();
+let targetVQEPluginReady=false;
+function initTargetVQEChart(){
+  if(!targetVQEPluginReady){
+    Chart.register({
+      id:'targetVQEGuides',
+      afterDatasetsDraw:chart=>{
+        const cx=chart.ctx, ys=chart.scales.y, xs=chart.scales.x;
+        if(!cx||!ys||!xs) return;
+        const lines=[];
+        if(Number.isFinite(vqeGuideLines.ground)){
+          lines.push({value:vqeGuideLines.ground,color:'rgba(255,255,255,0.24)',label:'E0 exact'});
+        }
+        if(Number.isFinite(vqeGuideLines.target) && Math.abs(vqeGuideLines.target-vqeGuideLines.ground)>1e-6){
+          lines.push({value:vqeGuideLines.target,color:vqeGuideLines.method==='VQE'?'rgba(82,198,255,0.74)':'rgba(197,143,255,0.78)',label:`${vqeGuideLines.targetLabel} exact`});
+        }else if(Number.isFinite(vqeGuideLines.target)){
+          lines[0]={value:vqeGuideLines.target,color:'rgba(82,198,255,0.74)',label:`${vqeGuideLines.targetLabel} exact`};
+        }
+        lines.forEach((line,idx)=>{
+          const y=ys.getPixelForValue(line.value);
+          cx.save();
+          cx.strokeStyle=line.color;
+          cx.lineWidth=1.4;
+          cx.setLineDash(idx===0?[5,5]:[7,4]);
+          cx.beginPath();
+          cx.moveTo(xs.left,y);
+          cx.lineTo(xs.right,y);
+          cx.stroke();
+          cx.setLineDash([]);
+          cx.fillStyle=line.color;
+          cx.font='10px monospace';
+          cx.fillText(line.label,xs.right-92,y-(idx*12+4));
+          cx.restore();
+        });
+      }
+    });
+    targetVQEPluginReady=true;
+  }
+
+  const cv=document.getElementById('comparison-chart'); if(!cv) return;
+  vqeChart=new Chart(cv.getContext('2d'),{
+    type:'line',
+    data:{labels:[],datasets:[
+      {label:'Ideal VQE',data:[],borderColor:'#3498db',backgroundColor:'rgba(52,152,219,0.1)',borderWidth:2.5,tension:0.28,pointRadius:1.8,fill:true},
+      {label:'Noisy VQE',data:[],borderColor:'#9b59b6',backgroundColor:'rgba(155,89,182,0.1)',borderWidth:2.5,tension:0.22,pointRadius:1.8,fill:true}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,animation:{duration:180},
+      scales:{
+        x:{title:{display:true,text:'Iteration',color:'rgba(255,255,255,0.6)',font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'rgba(255,255,255,0.45)'}},
+        y:{min:-1.5,max:-0.8,title:{display:true,text:'Energy (Ha)',color:'rgba(255,255,255,0.6)',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'},ticks:{color:'rgba(255,255,255,0.45)',callback:v=>v.toFixed(3)}}
+      },
+      plugins:{
+        legend:{labels:{color:'rgba(255,255,255,0.65)',font:{size:11},padding:12,usePointStyle:true}},
+        tooltip:{callbacks:{label:c=>[`${c.dataset.label}: ${c.parsed.y.toFixed(6)} Ha`,`Error to target: ${Math.abs(c.parsed.y-vqeGuideLines.target).toFixed(6)} Ha`]}}
+      }
+    }
+  });
+}
+
+class VQETargetCtrl {
+  constructor(){
+    this.running=false;
+    this.iF=0;
+    this.nF=0;
+    this.speed=95;
+    this.selectedLevel=clampLevel(document.getElementById('vqe-level-select')?.value ?? VQE_DEFAULT_LEVEL);
+    this.nextNoisyPanelFlickerAt=0;
+    this.noisyCard=document.querySelector('.vcc.noisy');
+    this.mountCircuits();
+  }
+  mountCircuits(){
+    if(this.iCirc) this.iCirc.destroy();
+    if(this.nCirc) this.nCirc.destroy();
+    this.iCirc=new CircuitDraw('ideal-circuit-svg',false);
+    this.nCirc=new CircuitDraw('noisy-circuit-svg',true);
+  }
+  setNoisyPanelOpacity(value){
+    if(!this.noisyCard) this.noisyCard=document.querySelector('.vcc.noisy');
+    if(this.noisyCard) this.noisyCard.style.opacity=value;
+  }
+  flickerNoisyPanel(ts=performance.now()){
+    if(!this.running) return;
+    if(ts<this.nextNoisyPanelFlickerAt) return;
+    this.nextNoisyPanelFlickerAt=ts+75+Math.random()*90;
+    this.setNoisyPanelOpacity((0.7+Math.random()*0.3).toFixed(2));
+  }
+  stabilizeNoisyPanel(){
+    this.nextNoisyPanelFlickerAt=0;
+    this.setNoisyPanelOpacity('1');
+  }
+  applyBundle(bundle){
+    animData=buildVQEAnimData(bundle);
+    setVQESummary(bundle);
+    if(vqeChart){
+      vqeChart.data.datasets[0].label=`Ideal ${bundle.method}`;
+      vqeChart.data.datasets[1].label=`Noisy ${bundle.method}`;
+      const vals=[...bundle.ideal_curve,...bundle.noisy_curve,bundle.exact_energy];
+      if(Number.isFinite(vqeGuideLines.ground)) vals.push(vqeGuideLines.ground);
+      const min=Math.min(...vals), max=Math.max(...vals);
+      const pad=Math.max(0.03,(max-min)*0.16);
+      vqeChart.options.scales.y.min=Number((min-pad).toFixed(3));
+      vqeChart.options.scales.y.max=Number((max+pad).toFixed(3));
+      vqeChart.data.labels=[];
+      vqeChart.data.datasets[0].data=[];
+      vqeChart.data.datasets[1].data=[];
+      vqeChart.update('none');
+    }
+    this.mountCircuits();
+    if(animData?.ideal?.length && animData?.noisy?.length){
+      this.iCirc.update(animData.ideal[0].params);
+      this.nCirc.update(animData.noisy[0].params);
+    }
+    setSt('ideal-circuit-status','ready','Ready');
+    setSt('noisy-circuit-status','ready','Ready');
+    document.getElementById('metrics-card').classList.add('hidden');
+    const hdr=document.getElementById('metrics-header');
+    if(hdr) hdr.textContent=`Results Summary \u00b7 ${bundle.state_key}`;
+    document.getElementById('graph-status').textContent=`${bundle.state_key} \u00b7 ${bundle.label} ready`;
+  }
+  async selectLevel(level){
+    this.running=false;
+    this.selectedLevel=clampLevel(level);
+    const selector=document.getElementById('vqe-level-select');
+    if(selector && Number(selector.value)!==this.selectedLevel) selector.value=String(this.selectedLevel);
+    document.getElementById('run-comparison-btn').disabled=true;
+    document.getElementById('graph-status').textContent='Loading target data...';
+    const bundle=await fetchVQEDemo(this.selectedLevel);
+    this.applyBundle(bundle);
+    document.getElementById('run-comparison-btn').disabled=false;
+  }
+  async start(){
+    if(this.running) return;
+    const requested=clampLevel(document.getElementById('vqe-level-select')?.value ?? this.selectedLevel);
+    if(!animData || !vqeCurrentDemo || vqeCurrentDemo.level!==requested){
+      await this.selectLevel(requested);
+    }
+    this.running=true;
+    this.iF=0;
+    this.nF=0;
+    this.mountCircuits();
+    this.stabilizeNoisyPanel();
+    setSt('ideal-circuit-status','running','Optimizing...');
+    setSt('noisy-circuit-status','running','Optimizing...');
+    document.getElementById('graph-status').textContent=`${animData.target.state_key} \u00b7 ${animData.target.label} \u00b7 ${animData.target.method}`;
+    document.getElementById('metrics-card').classList.add('hidden');
+    document.getElementById('run-comparison-btn').disabled=true;
+    vqeChart.data.labels=[];
+    vqeChart.data.datasets[0].data=[];
+    vqeChart.data.datasets[1].data=[];
+    vqeChart.update('none');
+    while(this.running){
+      this.flickerNoisyPanel();
+      const iDone=this.iF>=animData.ideal.length;
+      const nDone=this.nF>=animData.noisy.length;
+      if(iDone&&nDone) break;
+      if(!iDone){
+        const frame=animData.ideal[this.iF];
+        this.iCirc.update(frame.params);
+        vqeChart.data.datasets[0].data.push(frame.energy);
+        vqeChart.data.labels.push(frame.iteration);
+        this.iF++;
+        if(this.iF>=animData.ideal.length) setSt('ideal-circuit-status','converged','Converged');
+      }
+      if(!nDone){
+        const frame=animData.noisy[this.nF];
+        this.nCirc.update(frame.params);
+        vqeChart.data.datasets[1].data.push(frame.energy);
+        this.nF++;
+        if(this.nF>=animData.noisy.length) setSt('noisy-circuit-status','converged','Converged');
+      }
+      vqeChart.update('active');
+      await new Promise(r=>setTimeout(r,this.speed));
+    }
+    this.running=false;
+    this.stabilizeNoisyPanel();
+    document.getElementById('run-comparison-btn').disabled=false;
+    document.getElementById('graph-status').textContent=`${animData.target.state_key} \u00b7 ${animData.target.label} \u00b7 ${animData.target.method} \u2014 Complete!`;
+    const idealFinal=animData.ideal[animData.ideal.length-1];
+    const noisyFinal=animData.noisy[animData.noisy.length-1];
+    const ii=Math.max(0,animData.ideal.length-1);
+    const ni=Math.max(0,animData.noisy.length-1);
+    const pct=ii>0?Math.round(((ni-ii)/ii)*100):0;
+    const pctPrefix=pct>=0?'+':'';
+    const diffPrefix=(ni-ii)>=0?'+':'';
+    set('ideal-iters',ii);
+    set('noisy-iters',ni);
+    set('iter-diff',`${diffPrefix}${ni-ii} (${pctPrefix}${pct}%)`);
+    set('ideal-energy',idealFinal.energy.toFixed(6)+' Ha');
+    set('noisy-energy',noisyFinal.energy.toFixed(6)+' Ha');
+    set('energy-diff',Math.abs(noisyFinal.energy-idealFinal.energy).toFixed(6)+' Ha');
+    document.getElementById('metrics-card').classList.remove('hidden');
+  }
+  async reset(){
+    this.running=false;
+    this.iF=0;
+    this.nF=0;
+    this.stabilizeNoisyPanel();
+    const requested=clampLevel(document.getElementById('vqe-level-select')?.value ?? this.selectedLevel);
+    if(!animData || !vqeCurrentDemo || vqeCurrentDemo.level!==requested){
+      await this.selectLevel(requested);
+      return;
+    }
+    setSt('ideal-circuit-status','ready','Ready');
+    setSt('noisy-circuit-status','ready','Ready');
+    document.getElementById('metrics-card').classList.add('hidden');
+    document.getElementById('run-comparison-btn').disabled=false;
+    this.iCirc.update(animData.ideal[0].params);
+    this.nCirc.update(animData.noisy[0].params);
+    vqeChart.data.labels=[];
+    vqeChart.data.datasets[0].data=[];
+    vqeChart.data.datasets[1].data=[];
+    vqeChart.update('none');
+    document.getElementById('graph-status').textContent=`${vqeCurrentDemo.state_key} \u00b7 ${vqeCurrentDemo.label} ready`;
+  }
+}
+
+window.addEventListener('load',async()=>{
+  const vqeTopText=document.querySelector('#tab-vqe .vtop p');
+  if(vqeTopText) vqeTopText.textContent='H2 molecule optimization across ground and excited states — switch between E0, E1, and E2 without changing the overall UI flow.';
+  initTargetVQEChart();
+  vCtrl=new VQETargetCtrl();
   document.getElementById('run-comparison-btn').addEventListener('click',()=>vCtrl.start());
   document.getElementById('reset-demo-btn').addEventListener('click',()=>vCtrl.reset());
+  document.getElementById('vqe-level-select').addEventListener('change',e=>vCtrl.selectLevel(Number(e.target.value)));
+  await vCtrl.selectLevel(VQE_DEFAULT_LEVEL);
 });
 </script>
 </body>

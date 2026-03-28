@@ -16,6 +16,7 @@ import torch
 from qtorchx.core.primitives import Circuit, Gate, GateLibrary
 from qtorchx.core.backend import QtorchBackend
 from qtorchx.noise.qnaf import PhiManifoldExtractor
+from excited_states.demo_service import build_excited_demo
 
 # ── Qiskit / Aer ────────────────────────────────────────────────────────────
 from qiskit import QuantumCircuit
@@ -25,7 +26,7 @@ from qiskit.compiler import transpile
 import math
 
 # ── FastAPI / Pydantic ───────────────────────────────────────────────────────
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -196,6 +197,18 @@ async def root():
         "status": "ok",
         "message": "QtorchX API is running. Open /static/index.html for the playground.",
     }
+
+
+@app.get("/vqe-demo")
+async def vqe_demo(level: int = Query(default=0, ge=0, le=2)):
+    """
+    Serve bundled ground/excited-state demo data for the VQE tab.
+
+    This path intentionally avoids a live PySCF dependency so the UI can still
+    show E0/E1/E2 optimization targets on machines where the chemistry stack
+    is unavailable.
+    """
+    return build_excited_demo(level)
 
 
 # ============================================================================

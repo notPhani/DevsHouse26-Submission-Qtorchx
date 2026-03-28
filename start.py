@@ -15,16 +15,24 @@ import time
 import webbrowser
 
 ROOT  = os.path.dirname(os.path.abspath(__file__))
-VENV  = os.path.join(ROOT, "venv")
 PORT  = 8888
 URL   = f"http://localhost:{PORT}/static/index.html"
 
-# Resolve the correct Python executable (venv if available, else current)
-if os.path.isdir(VENV):
-    PY = os.path.join(VENV, "Scripts", "python.exe") if sys.platform == "win32" \
-         else os.path.join(VENV, "bin", "python")
-else:
-    PY = sys.executable
+VENV_CANDIDATES = [
+    os.path.join(ROOT, "venv"),
+    os.path.join(os.path.dirname(ROOT), "venv"),
+]
+
+# Resolve the correct Python executable (repo venv, workspace venv, else current)
+PY = sys.executable
+for venv in VENV_CANDIDATES:
+    if not os.path.isdir(venv):
+        continue
+    candidate = os.path.join(venv, "Scripts", "python.exe") if sys.platform == "win32" \
+        else os.path.join(venv, "bin", "python")
+    if os.path.exists(candidate):
+        PY = candidate
+        break
 
 
 def open_browser():
