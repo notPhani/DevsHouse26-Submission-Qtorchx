@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QtorchX - The QNaF Engine</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="variable-proximity.css">
     
     <style>
         *, *::before, *::after { box-sizing: border-box; }
@@ -643,9 +644,9 @@
         
         <!-- ══ SECTION 1: HERO ══ -->
         <section class="section" id="hero">
-            <h1 class="hero-title">
+            <h1 class="hero-title" data-proximity>
                 <span class="inverse-text">You are modelling quantum noise</span><br>
-                <span class="gradient-text">the wrong way.</span>
+                <span style="color:#fff">the </span><span class="gradient-text">wrong way.</span>
             </h1>
             <p class="hero-subtext">
     Decoherence isn't a series of isolated, discrete gate errors—it is a continuous spatiotemporal manifold. <strong>QtorchX</strong> is a high-performance quantum simulator built on PyTorch that models this reality. Simulate complex dynamics and non-Markovian noise via the QNaF formalism, fully optimized for GPU acceleration.
@@ -1241,6 +1242,18 @@ loss.<span class="c-fn">backward</span>()
                 }, 2200);
             });
         }
+    </script>
+    <script src="variable-proximity.js"></script>
+    <script>
+        (function() {
+            var el = document.querySelector('[data-proximity]');
+            if (el) new VariableProximity(el, {
+                radius: 120,
+                falloff: 'gaussian',
+                fromSettings: "'wght' 800",
+                toSettings: "'wght' 900"
+            });
+        })();
     </script>
 </body>
 </html>
