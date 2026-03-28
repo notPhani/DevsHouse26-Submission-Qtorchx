@@ -1,0 +1,421 @@
+/* ══════════════════════════════════════════════════════════════ */
+/* REAL WORLD APPLICATIONS - REACT COMPONENT CSS */
+/* ══════════════════════════════════════════════════════════════ */
+
+:root {
+  --color-blue: #3498db;
+  --color-purple: #9b59b6;
+  --color-green: #2ecc71;
+  --color-red: #e74c3c;
+  --color-orange: #f39c12;
+  --color-brown: #d35400;
+  --bg-primary: #0a0a0d;
+  --bg-card: rgba(10, 10, 13, 0.85);
+  --text-primary: #ffffff;
+  --text-secondary: #aaa;
+  --text-muted: #777;
+}
+
+.rwa-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── HERO SECTION ── */
+.rwa-hero {
+  width: 100%;
+  padding: 82px 32px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  min-height: 30vh;
+}
+
+.rwa-hero-title {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  margin: 0;
+  color: var(--text-primary);
+  background: linear-gradient(90deg, var(--color-blue), var(--color-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.rwa-hero-subtitle {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  max-width: 700px;
+  line-height: 1.6;
+  margin: 0;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── SECTION STYLES ── */
+.rwa-core-flow,
+.rwa-practical {
+  width: 100%;
+  padding: 60px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  min-height: auto;
+}
+
+.rwa-section-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  max-width: 800px;
+}
+
+.rwa-kicker {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.67rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.rwa-title {
+  font-size: clamp(1.45rem, 2.5vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.0;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.rwa-title .rwa-accent {
+  background: linear-gradient(90deg, var(--color-blue), var(--color-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.rwa-subtitle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.73rem;
+  color: #bbb;
+  max-width: 600px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── VERTICAL FLOW ── */
+.rwa-flow-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.rwa-flow-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  max-width: 500px;
+  align-items: stretch;
+}
+
+.rwa-flow-step {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  align-items: stretch;
+}
+
+.rwa-flow-step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg-card);
+  border: 1px solid rgba(52, 152, 219, 0.15);
+  border-radius: 12px;
+  padding: 18px 20px;
+  position: relative;
+  overflow: visible;
+  transition: all 0.4s ease;
+  z-index: 2;
+}
+
+.rwa-flow-step-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(52, 152, 219, 0.5), transparent);
+}
+
+.rwa-flow-step:hover .rwa-flow-step-content {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(52, 152, 219, 0.08);
+}
+
+/* Step color variants */
+.rwa-flow-step.step-01 .rwa-flow-step-content {
+  border-color: rgba(52, 152, 219, 0.15);
+}
+.rwa-flow-step.step-01 .rwa-flow-step-content::before {
+  background: linear-gradient(90deg, transparent, rgba(52, 152, 219, 0.5), transparent);
+}
+.rwa-flow-step.step-01:hover .rwa-flow-step-content {
+  border-color: rgba(52, 152, 219, 0.45);
+}
+
+.rwa-flow-step.step-02 .rwa-flow-step-content {
+  border-color: rgba(155, 89, 182, 0.15);
+}
+.rwa-flow-step.step-02 .rwa-flow-step-content::before {
+  background: linear-gradient(90deg, transparent, rgba(155, 89, 182, 0.5), transparent);
+}
+.rwa-flow-step.step-02:hover .rwa-flow-step-content {
+  border-color: rgba(155, 89, 182, 0.45);
+}
+
+.rwa-flow-step.step-03 .rwa-flow-step-content {
+  border-color: rgba(46, 204, 113, 0.15);
+}
+.rwa-flow-step.step-03 .rwa-flow-step-content::before {
+  background: linear-gradient(90deg, transparent, rgba(46, 204, 113, 0.5), transparent);
+}
+.rwa-flow-step.step-03:hover .rwa-flow-step-content {
+  border-color: rgba(46, 204, 113, 0.45);
+}
+
+.rwa-flow-step.step-04 .rwa-flow-step-content {
+  border-color: rgba(231, 76, 60, 0.15);
+}
+.rwa-flow-step.step-04 .rwa-flow-step-content::before {
+  background: linear-gradient(90deg, transparent, rgba(231, 76, 60, 0.5), transparent);
+}
+.rwa-flow-step.step-04:hover .rwa-flow-step-content {
+  border-color: rgba(231, 76, 60, 0.45);
+}
+
+.rwa-flow-step.step-05 .rwa-flow-step-content {
+  border-color: rgba(241, 196, 15, 0.15);
+}
+.rwa-flow-step.step-05 .rwa-flow-step-content::before {
+  background: linear-gradient(90deg, transparent, rgba(241, 196, 15, 0.5), transparent);
+}
+.rwa-flow-step.step-05:hover .rwa-flow-step-content {
+  border-color: rgba(241, 196, 15, 0.45);
+}
+
+.rwa-flow-step.step-06 .rwa-flow-step-content {
+  border-color: rgba(188, 110, 39, 0.15);
+}
+.rwa-flow-step.step-06 .rwa-flow-step-content::before {
+  background: linear-gradient(90deg, transparent, rgba(188, 110, 39, 0.5), transparent);
+}
+.rwa-flow-step.step-06:hover .rwa-flow-step-content {
+  border-color: rgba(188, 110, 39, 0.45);
+}
+
+.rwa-flow-step-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #888;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.rwa-flow-step-title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.rwa-flow-step.step-01 .rwa-flow-step-title {
+  background: linear-gradient(110deg, white 0%, var(--color-blue) 70%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.rwa-flow-step.step-02 .rwa-flow-step-title {
+  background: linear-gradient(110deg, white 0%, var(--color-purple) 70%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.rwa-flow-step.step-03 .rwa-flow-step-title {
+  background: linear-gradient(110deg, white 0%, var(--color-green) 70%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.rwa-flow-step.step-04 .rwa-flow-step-title {
+  background: linear-gradient(110deg, white 0%, var(--color-red) 70%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.rwa-flow-step.step-05 .rwa-flow-step-title {
+  background: linear-gradient(110deg, white 0%, var(--color-orange) 70%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.rwa-flow-step.step-06 .rwa-flow-step-title {
+  background: linear-gradient(110deg, white 0%, var(--color-brown) 70%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.rwa-flow-step-desc {
+  font-size: 0.79rem;
+  color: #999;
+  line-height: 1.5;
+  margin: 0;
+  flex: 1;
+}
+
+/* Connectors */
+.rwa-flow-connector {
+  width: 2px;
+  height: 24px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(180deg, var(--connector-color, #3498db) 0.4, transparent);
+}
+
+.rwa-arrow {
+  position: absolute;
+  bottom: -12px;
+  font-size: 16px;
+  color: var(--connector-color, #3498db);
+  opacity: 0.4;
+  font-weight: 700;
+}
+
+/* ── PRACTICAL APPLICATIONS GRID ── */
+.rwa-apps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  width: 100%;
+  max-width: 1100px;
+}
+
+.rwa-app-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(52, 152, 219, 0.15);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  min-height: 200px;
+}
+
+.rwa-app-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(52, 152, 219, 0.55), transparent);
+}
+
+.rwa-app-card:hover {
+  border-color: var(--app-color, #3498db);
+  border-color: color-mix(in srgb, var(--app-color) 45%, transparent);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(52, 152, 219, 0.1);
+}
+
+.rwa-app-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0;
+  flex-shrink: 0;
+  color: var(--app-color, #3498db);
+}
+
+.rwa-app-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin: 0;
+  flex-shrink: 0;
+  background: linear-gradient(110deg, white 0%, var(--app-color) 70%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.rwa-app-desc {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1200px) {
+  .rwa-apps-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .rwa-apps-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rwa-core-flow,
+  .rwa-practical {
+    padding: 40px 20px;
+    gap: 30px;
+  }
+
+  .rwa-hero {
+    padding: 60px 20px;
+  }
+
+  .rwa-flow-steps {
+    max-width: 100%;
+  }
+}
