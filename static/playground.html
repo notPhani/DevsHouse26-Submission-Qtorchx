@@ -625,6 +625,8 @@ function gc(n){ return GC[n.toUpperCase()]||GC.DEFAULT; }
 
 const circuit=Array.from({length:N_QUBITS},()=>Array(N_STEPS).fill(null));
 let gateList=[], histData=null, dragging=false, dragGate=null, dragX=0, dragY=0;
+let phiAnimT=0, phiAnimRaf=null;
+let phiOffscreen=null, phiOffW=0, phiOffH=0;
 let searchQ='', activeF=new Set(['all']);
 
 const circ=document.getElementById('circuitCanvas');
@@ -726,7 +728,7 @@ function setWarn(m){ document.getElementById('warn').textContent=m; }
 function clearCircuit(){
   for(let q=0;q<N_QUBITS;q++) for(let t=0;t<N_STEPS;t++) circuit[q][t]=null;
   gateList=[]; histData=null; window.lastPhi=null;
-  drawCircuit(); drawHistogram();
+  stopPhiAnim(); drawCircuit(); drawHistogram();
   document.getElementById('metaBox').value='# Circuit cleared.';
 }
 document.getElementById('clearBtn').addEventListener('click',clearCircuit);
@@ -760,7 +762,7 @@ function drawCircuit(){
   ctx.fillStyle='rgba(52,152,219,0.1)'; ctx.fillRect((N_STEPS-1)*cW,0,cW,N_QUBITS*cH);
   ctx.strokeStyle='rgba(52,152,219,0.3)'; ctx.lineWidth=1;
   ctx.beginPath(); ctx.moveTo((N_STEPS-1)*cW,0); ctx.lineTo((N_STEPS-1)*cW,N_QUBITS*cH); ctx.stroke();
-  drawPhiHeat();
+  renderPhiField(window.lastPhi);
   const drawn=new Set();
   for(let q=0;q<N_QUBITS;q++) for(let t=0;t<N_STEPS;t++){
     const g=circuit[q][t]; if(!g||g.name==='M') continue;
@@ -897,32 +899,184 @@ function drawHistogram(){
   }
 }
 
-// Phi heatmap
-function drawPhiHeat(){
-  if(!window.lastPhi||!document.getElementById('inspectToggle').checked) return;
-  const phi=window.lastPhi; let lo=Infinity,hi=-Infinity;
-  for(const row of phi) for(const v of row){lo=Math.min(lo,v);hi=Math.max(hi,v);}
-  if(hi===lo) return;
-  const range=hi-lo;
-  function smp(q,t){const qq=Math.max(0,Math.min(N_QUBITS-1,Math.floor(q))),tt=Math.max(0,Math.min(phi[0].length-1,Math.floor(t)));return phi[qq][tt];}
-  function bil(q,t){const q0=Math.floor(q),q1=Math.min(q0+1,N_QUBITS-1),t0=Math.floor(t),t1=Math.min(t0+1,phi[0].length-1);const v0=smp(q0,t0)*(1-t+t0)+smp(q0,t1)*(t-t0),v1=smp(q1,t0)*(1-t+t0)+smp(q1,t1)*(t-t0);return v0*(1-q+q0)+v1*(q-q0);}
-  const sub=8;
-  for(let q=0;q<N_QUBITS;q++) for(let t=0;t<N_STEPS;t++){
-    const cc=document.createElement('canvas'); cc.width=sub; cc.height=sub;
-    const cx=cc.getContext('2d'), id=cx.createImageData(sub,sub);
-    for(let py=0;py<sub;py++) for(let px=0;px<sub;px++){
-      const n=(bil(q+py/sub,t+px/sub)-lo)/range;
-      const c=phiCol(Math.max(0,Math.min(1,n))), i=(py*sub+px)*4;
-      id.data[i]=c.r;id.data[i+1]=c.g;id.data[i+2]=c.b;id.data[i+3]=c.a;
-    }
-    cx.putImageData(id,0,0); ctx.imageSmoothingEnabled=true;
-    ctx.drawImage(cc,t*cW+2,q*cH+2,cW-4,cH-4);
+// ════════════════════════════════════════════════════════════
+// PHI-FIELD — cell-bilinear · inferno colormap · scientific heatmap
+// ════════════════════════════════════════════════════════════
+
+// φ-field colormap: inferno — black → purple → red → orange → cream
+const PHI_LUT=(()=>{
+  const cp=[
+    [0,   0,   4  ],  // 0.00 black
+    [20,  11,  53 ],  // 0.13 dark purple
+    [58,  9,   99 ],  // 0.25 deep purple
+    [96,  19,  110],  // 0.38 purple-magenta
+    [145, 38,  103],  // 0.50 dark rose
+    [192, 65,  79 ],  // 0.63 crimson-orange
+    [228, 103, 44 ],  // 0.75 orange
+    [249, 163, 21 ],  // 0.88 amber
+    [252, 255, 164],  // 1.00 cream-yellow
+  ];
+  const lut=new Uint8Array(256*3);
+  for(let i=0;i<256;i++){
+    const t=i/255, x=t*(cp.length-1);
+    const lo=Math.floor(x), hi=Math.min(lo+1,cp.length-1), f=x-lo;
+    lut[i*3]  =Math.round(cp[lo][0]*(1-f)+cp[hi][0]*f);
+    lut[i*3+1]=Math.round(cp[lo][1]*(1-f)+cp[hi][1]*f);
+    lut[i*3+2]=Math.round(cp[lo][2]*(1-f)+cp[hi][2]*f);
   }
+  return lut;
+})();
+
+function renderPhiField(phi){
+  if(!phi||!document.getElementById('inspectToggle').checked) return;
+  const NQ=phi.length, NT=phi[0].length;
+  const fieldW=Math.floor(cW*(NT-1)), fieldH=Math.floor(cH*NQ);
+  if(fieldW<=0||fieldH<=0) return;
+
+  // Normalize to [lo, hi]
+  let lo=Infinity,hi=-Infinity;
+  for(const row of phi) for(const v of row){lo=Math.min(lo,v);hi=Math.max(hi,v);}
+  if(hi===lo) hi=lo+1;
+  const range=hi-lo;
+
+  // Cell dimensions in canvas pixels
+  const cellW=fieldW/(NT-1), cellH=fieldH/NQ;
+
+  // Render at native field resolution via ImageData
+  const id=ctx.createImageData(fieldW,fieldH);
+  for(let py=0;py<fieldH;py++){
+    for(let px=0;px<fieldW;px++){
+      // Cell-centered bilinear (matches matplotlib imshow behaviour)
+      let fq=py/cellH-0.5, ft=px/cellW-0.5;
+      fq=Math.max(0,Math.min(NQ-1.001,fq));
+      ft=Math.max(0,Math.min(NT-2.001,ft));
+      const qi=Math.floor(fq), ti=Math.floor(ft);
+      const dq=fq-qi, dt=ft-ti;
+      const q1=Math.min(qi+1,NQ-1), t1=Math.min(ti+1,NT-1);
+      const v00=(phi[qi ][ti ]-lo)/range, v01=(phi[qi ][t1]-lo)/range;
+      const v10=(phi[q1][ti ]-lo)/range, v11=(phi[q1][t1]-lo)/range;
+      const bil=v00*(1-dt)*(1-dq)+v01*dt*(1-dq)+v10*(1-dt)*dq+v11*dt*dq;
+      // Subtle traveling-wave animation
+      const w=0.03*Math.sin(fq*2.2+phiAnimT*2.0)*Math.cos(ft*1.8-phiAnimT*1.5);
+      const n=Math.max(0,Math.min(1,bil+w));
+      const ci=Math.min(255,Math.floor(n*255));
+      const ii=(py*fieldW+px)*4;
+      id.data[ii]  =PHI_LUT[ci*3  ];
+      id.data[ii+1]=PHI_LUT[ci*3+1];
+      id.data[ii+2]=PHI_LUT[ci*3+2];
+      id.data[ii+3]=Math.round((0.82+0.14*n)*255);
+    }
+  }
+
+  // Blit via offscreen canvas to respect DPR transform
+  if(!phiOffscreen||phiOffW!==fieldW||phiOffH!==fieldH){
+    phiOffscreen=document.createElement('canvas');
+    phiOffscreen.width=phiOffW=fieldW; phiOffscreen.height=phiOffH=fieldH;
+  }
+  phiOffscreen.getContext('2d').putImageData(id,0,0);
+  ctx.save();
+  ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(phiOffscreen,0,0);
+  ctx.restore();
+
+  // Subtle cell grid lines
+  ctx.save();
+  ctx.strokeStyle='rgba(255,255,255,0.09)';
+  ctx.lineWidth=0.5;
+  ctx.beginPath();
+  for(let q=1;q<NQ;q++){const y=q*cellH;ctx.moveTo(0,y);ctx.lineTo(fieldW,y);}
+  for(let t=1;t<NT-1;t++){const x=t*cellW;ctx.moveTo(x,0);ctx.lineTo(x,fieldH);}
+  ctx.stroke();
+  ctx.restore();
+
+  // White iso-contours + colorbar
+  drawPhiContours(phi,NQ,NT,fieldW,fieldH,lo,range);
+  drawPhiColorbar(fieldW,fieldH,lo,hi);
 }
-function phiCol(n){
-  if(n<.33){const t=n/.33;return{r:Math.round(t*255),g:0,b:0,a:Math.round((0.4+t*0.2)*255)};}
-  if(n<.66){const t=(n-.33)/.33;return{r:255,g:Math.round(t*165),b:0,a:Math.round((0.6+t*0.15)*255)};}
-  const t=(n-.66)/.34;return{r:255,g:Math.round(165+t*90),b:Math.round(t*255),a:Math.round((0.75+t*0.25)*255)};
+
+function drawPhiContours(phi,NQ,NT,fieldW,fieldH,lo,range){
+  const cellW=fieldW/(NT-1), cellH=fieldH/NQ;
+  const numC=5;
+  const edgeLerp=(a,b,va,vb,lv)=>{const d=vb-va;return d===0?a+(b-a)*0.5:a+(b-a)*(lv-va)/d;};
+  const pulse=0.22+0.10*Math.abs(Math.sin(phiAnimT*0.5));
+  ctx.save();
+  ctx.strokeStyle=`rgba(255,255,255,${pulse.toFixed(2)})`;
+  ctx.lineWidth=0.75;
+  for(let ci=0;ci<numC;ci++){
+    const level=lo+(ci+1)/(numC+1)*range;
+    ctx.beginPath();
+    for(let q=0;q<NQ-1;q++){
+      for(let t=0;t<NT-2;t++){
+        const vTL=phi[q  ][t  ], vTR=phi[q  ][t+1];
+        const vBL=phi[q+1][t  ], vBR=phi[q+1][t+1];
+        const cs=(vTL>level?8:0)|(vTR>level?4:0)|(vBR>level?2:0)|(vBL>level?1:0);
+        if(cs===0||cs===15) continue;
+        const x0=t*cellW,y0=q*cellH,x1=(t+1)*cellW,y1=(q+1)*cellH;
+        const tE=[edgeLerp(x0,x1,vTL,vTR,level),y0], rE=[x1,edgeLerp(y0,y1,vTR,vBR,level)];
+        const bE=[edgeLerp(x0,x1,vBL,vBR,level),y1], lE=[x0,edgeLerp(y0,y1,vTL,vBL,level)];
+        const segs={1:[[lE,bE]],2:[[bE,rE]],3:[[lE,rE]],4:[[tE,rE]],
+          5:[[tE,rE],[lE,bE]],6:[[tE,bE]],7:[[tE,lE]],8:[[tE,lE]],
+          9:[[tE,bE]],10:[[tE,lE],[bE,rE]],11:[[tE,rE]],12:[[lE,rE]],
+          13:[[bE,rE]],14:[[lE,bE]]}[cs]||[];
+        for(const[p1,p2] of segs){ctx.moveTo(p1[0],p1[1]);ctx.lineTo(p2[0],p2[1]);}
+      }
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawPhiColorbar(fieldW,fieldH,lo,hi){
+  const cbW=9, cbH=fieldH-22, cbX=fieldW-cbW-20, cbY=11;
+  ctx.save();
+  // Dark backdrop
+  ctx.fillStyle='rgba(8,8,12,0.60)';
+  ctx.fillRect(cbX-5,cbY-13,cbW+32,cbH+26);
+  // Gradient strip: high (cream) at top → low (black) at bottom
+  const grad=ctx.createLinearGradient(0,cbY,0,cbY+cbH);
+  grad.addColorStop(0,    'rgb(252,255,164)');
+  grad.addColorStop(0.13, 'rgb(249,163,21)');
+  grad.addColorStop(0.25, 'rgb(228,103,44)');
+  grad.addColorStop(0.38, 'rgb(192,65,79)');
+  grad.addColorStop(0.50, 'rgb(145,38,103)');
+  grad.addColorStop(0.63, 'rgb(96,19,110)');
+  grad.addColorStop(0.75, 'rgb(58,9,99)');
+  grad.addColorStop(0.88, 'rgb(20,11,53)');
+  grad.addColorStop(1,    'rgb(0,0,4)');
+  ctx.fillStyle=grad;
+  ctx.fillRect(cbX,cbY,cbW,cbH);
+  ctx.strokeStyle='rgba(255,255,255,0.22)';
+  ctx.lineWidth=0.5;
+  ctx.strokeRect(cbX,cbY,cbW,cbH);
+  // Tick marks + labels
+  ctx.fillStyle='rgba(215,215,220,0.88)';
+  ctx.font='9px monospace';
+  ctx.textAlign='left';
+  ctx.beginPath();
+  const ticks=[0,0.25,0.5,0.75,1.0];
+  for(const t of ticks){
+    const y=cbY+t*cbH;
+    ctx.moveTo(cbX+cbW,y); ctx.lineTo(cbX+cbW+3,y);
+    ctx.fillText((lo+(1-t)*(hi-lo)).toFixed(2),cbX+cbW+5,y+3);
+  }
+  ctx.strokeStyle='rgba(255,255,255,0.38)';
+  ctx.stroke();
+  // φ label
+  ctx.fillStyle='rgba(195,195,208,0.90)';
+  ctx.font='bold 9px monospace';
+  ctx.textAlign='center';
+  ctx.fillText('φ',cbX+cbW/2,cbY-4);
+  ctx.restore();
+}
+
+function startPhiAnim(){
+  if(phiAnimRaf) return;
+  function tick(){phiAnimT+=0.016;drawCircuit();phiAnimRaf=requestAnimationFrame(tick);}
+  phiAnimRaf=requestAnimationFrame(tick);
+}
+function stopPhiAnim(){
+  if(phiAnimRaf){cancelAnimationFrame(phiAnimRaf);phiAnimRaf=null;}
+  drawCircuit();
 }
 
 // Loading
@@ -974,6 +1128,7 @@ document.getElementById('runBtn').addEventListener('click',async()=>{
       fid!==null?'':null, fid!==null?'FIDELITY (Bhattacharyya)':null, fid!==null?`  Ideal vs Noisy  ${fid.toFixed(4)}`:null,
     ].filter(l=>l!==null).join('\n');
     window.lastPhi=res.phi_manifold;
+    if(inspect&&window.lastPhi) startPhiAnim(); else {stopPhiAnim();}
     drawCircuit(); hideLoading();
   }catch(err){
     hideLoading();
@@ -1004,6 +1159,10 @@ document.querySelectorAll('.pbtn').forEach(b=>{
   });
 });
 document.querySelector('[data-preset="bell"]').click();
+
+document.getElementById('inspectToggle').addEventListener('change',e=>{
+  if(e.target.checked&&window.lastPhi) startPhiAnim(); else stopPhiAnim();
+});
 
 document.getElementById('noiseLevel').addEventListener('input',e=>{
   document.getElementById('nlVal').textContent=parseFloat(e.target.value).toFixed(2);
