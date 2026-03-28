@@ -26,6 +26,7 @@ from qiskit.compiler import transpile
 import math
 
 # ── FastAPI / Pydantic ───────────────────────────────────────────────────────
+from pathlib import Path
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -187,7 +188,7 @@ app.add_middleware(
 )
 
 # Serve the frontend at /static
-app.mount("/static", StaticFiles(directory="static", html=True), name="static")
+app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static", html=True), name="static")
 
 
 @app.get("/")
