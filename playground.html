@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QtorchX Playground</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; font-family: 'IBM Plex Mono', 'Courier New', monospace; }
+    html, body { height: 100%; overflow: hidden; background: #050508; color: #e8ecf5; }
+
+    #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    #app { position: relative; z-index: 1; display: flex; flex-direction: column; height: 100vh; }
+
+    /* ── NAV ── */
+    #nav { flex: 0 0 50px; background: rgba(5,5,8,0.82); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; padding: 0 14px; gap: 10px; }
+    .logo { font-weight: 600; font-size: 15px; color: #fff; text-decoration: none; background: linear-gradient(90deg,#3498db,#9b59b6); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; white-space: nowrap; }
+    .tab-btns { display: flex; gap: 3px; }
+    .tab-btn { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.55); padding: 4px 11px; font-size: 11px; border-radius: 3px; cursor: pointer; transition: all .15s; }
+    .tab-btn:hover { color: #fff; border-color: rgba(255,255,255,0.22); }
+    .tab-btn.active { background: #3498db; border-color: #3498db; color: #fff; }
+    .nav-gap { flex: 1; }
+    .nav-lnk { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 11px; transition: color .15s; }
+    .nav-lnk:hover { color: #fff; }
+    .nav-sep { color: rgba(255,255,255,0.15); font-size: 11px; }
+
+    /* ── TAB PANELS ── */
+    .tab-panel { flex: 1 1 auto; display: none; flex-direction: column; min-height: 0; }
+    .tab-panel.active { display: flex; }
+
+    /* ── CIRCUIT BUILDER ── */
+    #circuit-main { flex: 0 0 300px; display: grid; grid-template-columns: 208px minmax(0,1fr) 252px; border-bottom: 1px solid rgba(255,255,255,0.05); min-height: 0; }
+    .pane { background: rgba(255,255,255,0.012); border-right: 1px solid rgba(255,255,255,0.05); overflow: hidden; }
+    .pane:last-child { border-right: none; }
+    #lp { padding: 8px; display: flex; flex-direction: column; }
+    #cp, #rp { padding: 8px; display: flex; flex-direction: column; }
+    .pt { font-size: 12px; font-weight: 600; color: #e8ecf5; }
+    .ps { font-size: 10px; color: rgba(255,255,255,0.4); margin-left: 5px; }
+    .ph { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-shrink: 0; }
+    .phl { display: flex; align-items: baseline; gap: 4px; }
+    .phr { display: flex; align-items: center; gap: 7px; font-size: 11px; flex-wrap: wrap; }
+
+    #gateSearch { width: 100%; margin-top: 5px; padding: 3px 6px; font-size: 11px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.45); color: #e8ecf5; outline: none; }
+    #gateSearch:focus { border-color: #3498db; }
+    #gate-filters { margin-top: 5px; display: flex; flex-wrap: wrap; gap: 3px; }
+    .fbtn { flex: 1 1 auto; padding: 2px 3px; font-size: 10px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.6); cursor: pointer; }
+    .fbtn.active { background: #3498db; border-color: #3498db; color: #fff; }
+    #gate-lib { margin-top: 6px; display: grid; grid-template-columns: repeat(4,1fr); gap: 3px; overflow-y: auto; flex: 1; scrollbar-width: none; }
+    #gate-lib::-webkit-scrollbar { display: none; }
+    .gbtn { padding: 5px 0; font-size: 11px; border-radius: 2px; border: 1px solid rgba(52,152,219,0.22); background: rgba(52,152,219,0.07); color: #e8ecf5; cursor: pointer; font-weight: 500; }
+    .gbtn:hover { background: rgba(52,152,219,0.18); }
+    .gbtn.ag { outline: 2px solid #3498db; }
+    #warn { margin-top: 5px; font-size: 10px; color: #f39c12; min-height: 14px; flex-shrink: 0; }
+
+    #circuit-inner { flex: 1; border: 1px solid rgba(52,152,219,0.2); background: #0b0f1c; padding: 2px; min-height: 0; }
+    #circuitCanvas { width: 100%; height: 100%; display: block; }
+
+    .htog { display: flex; align-items: center; gap: 5px; cursor: pointer; color: rgba(255,255,255,0.55); user-select: none; font-size: 10px; }
+    .htog input { display: none; }
+    .tsw { position: relative; display: inline-block; width: 30px; height: 17px; background: rgba(255,255,255,0.1); border-radius: 17px; transition: background .2s; border: 1px solid rgba(255,255,255,0.14); flex-shrink: 0; }
+    .tsw::after { content: ''; position: absolute; top: 2px; left: 2px; width: 11px; height: 11px; background: rgba(255,255,255,0.5); border-radius: 50%; transition: all .2s; }
+    .htog input:checked + .tsw { background: #3498db; border-color: #3498db; }
+    .htog input:checked + .tsw::after { left: 15px; background: #fff; }
+    .run-btn { padding: 4px 10px; font-size: 11px; border-radius: 3px; border: none; background: #3498db; color: #fff; cursor: pointer; font-weight: 600; }
+    .run-btn:hover { background: #2980b9; }
+    .clr-btn { padding: 3px 7px; font-size: 10px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.14); background: transparent; color: rgba(255,255,255,0.45); cursor: pointer; }
+    .clr-btn:hover { color: #fff; }
+
+    #metaBox { flex: 1; margin-top: 6px; background: rgba(0,0,0,0.5); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.06); font-size: 10px; line-height: 1.55; padding: 7px; resize: none; outline: none; }
+
+    #circuit-bottom { flex: 1 1 auto; display: grid; grid-template-columns: 2fr 1fr; min-height: 0; }
+    .bp { padding: 6px; background: rgba(255,255,255,0.008); border-right: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; overflow: hidden; }
+    .bp:last-child { border-right: none; }
+    #histCanvas { width: 100%; flex: 1; display: block; min-height: 0; }
+    #blochCanvas { width: 100%; flex: 1; border: 1px solid rgba(52,152,219,0.2); background: #090d1a; display: block; min-height: 0; }
+
+    /* ── LOADING ── */
+    .lov { position: fixed; inset: 0; background: rgba(5,5,8,.88); backdrop-filter: blur(12px); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 1; transition: opacity .4s; }
+    .lov.hidden { opacity: 0; pointer-events: none; }
+    .lring { width: 90px; height: 90px; margin: 0 auto 18px; border: 6px solid rgba(155,89,182,.2); border-top: 6px solid #9b59b6; border-radius: 50%; animation: lspin 1.1s linear infinite; }
+    @keyframes lspin { to { transform: rotate(360deg); } }
+    .lmsg { font-size: 13px; color: #9b59b6; font-weight: 600; }
+
+    /* ── COMPARE ── */
+    #tab-compare { overflow-y: auto; padding: 18px; }
+    .cpage { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+    .gcard { background: rgba(255,255,255,0.022); border: 1px solid rgba(255,255,255,0.07); border-radius: 6px; padding: 14px; }
+    .ctitle { font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.38); text-transform: uppercase; letter-spacing: .13em; margin-bottom: 10px; }
+    .presets { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 11px; }
+    .pbtn { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; color: rgba(255,255,255,0.65); padding: 4px 10px; font-size: 11px; cursor: pointer; transition: all .15s; }
+    .pbtn:hover { border-color: #3498db; color: #3498db; }
+    .pbtn.active { border-color: #3498db; color: #3498db; background: rgba(52,152,219,0.1); }
+    .cmp-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 11px; }
+    .cctl label { display: block; font-size: 9px; color: rgba(255,255,255,0.38); margin-bottom: 3px; }
+    .cctl input[type=number], .cctl select { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #e8ecf5; border-radius: 3px; padding: 4px 7px; font-size: 11px; width: 110px; }
+    .cctl input[type=range] { accent-color: #3498db; width: 120px; }
+    .nlv { color: #3498db; font-size: 11px; font-weight: 600; }
+    .brun { width: 100%; padding: 8px; background: #3498db; border: none; color: #fff; font-size: 12px; font-weight: 600; border-radius: 3px; cursor: pointer; transition: background .15s; }
+    .brun:hover { background: #2980b9; }
+    .brun:disabled { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.3); cursor: not-allowed; }
+    #cmpErr { display: none; background: rgba(231,76,60,.1); border: 1px solid #e74c3c; color: #e74c3c; border-radius: 3px; padding: 9px; font-size: 11px; margin-bottom: 10px; }
+    .abadge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 13px; border-radius: 3px; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+    .ab-hi  { background: rgba(52,152,219,.1); border: 1px solid #3498db; color: #3498db; }
+    .ab-mod { background: rgba(243,156,18,.1); border: 1px solid #f39c12; color: #f39c12; }
+    .ab-div { background: rgba(231,76,60,.1); border: 1px solid #e74c3c; color: #e74c3c; }
+    .mstrip { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; }
+    .mc { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px; padding: 9px 10px; text-align: center; }
+    .mc .v { font-size: 1.3rem; font-weight: 700; color: #3498db; }
+    .mc .v.pu { color: #9b59b6; } .mc .v.go { color: #f39c12; }
+    .mc .l { font-size: 9px; color: rgba(255,255,255,0.38); margin-top: 3px; text-transform: uppercase; letter-spacing: .07em; }
+    .tcol { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .ecrd { background: rgba(255,255,255,0.018); border: 1px solid rgba(255,255,255,0.06); border-radius: 5px; padding: 12px; }
+    .eh { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
+    .edot { width: 8px; height: 8px; border-radius: 50%; }
+    .edot.qtx { background: #3498db; } .edot.aer { background: #9b59b6; }
+    .eh h3 { font-size: 12px; font-weight: 600; }
+    .esub { font-size: 10px; color: rgba(255,255,255,0.38); }
+    .etim { font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 6px; text-align: right; }
+    .prow { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    th { color: rgba(255,255,255,0.38); font-weight: 600; text-align: left; padding: 5px 7px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+    td { padding: 4px 7px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    .bc { display: flex; align-items: center; gap: 5px; }
+    .mb { height: 5px; border-radius: 2px; min-width: 2px; }
+
+    /* ── VQE ── */
+    #tab-vqe { overflow-y: auto; padding: 18px; }
+    .vpage { max-width: 1080px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+    .vtop { text-align: center; padding: 4px 0 8px; }
+    .vtop h1 { font-size: 17px; font-weight: 600; background: linear-gradient(90deg,#3498db,#9b59b6); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .vtop p { font-size: 11px; color: rgba(255,255,255,0.38); margin-top: 4px; }
+    .vgrid { display: grid; grid-template-columns: 1fr 1.15fr; gap: 14px; align-items: start; }
+    .vcol { display: flex; flex-direction: column; gap: 10px; }
+    .vcc { background: rgba(255,255,255,0.022); border: 1px solid rgba(255,255,255,0.06); border-radius: 5px; padding: 12px; }
+    .vcc.ideal { border-color: rgba(52,152,219,0.3); }
+    .vcc.noisy { border-color: rgba(155,89,182,0.3); }
+    .vch { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .vch h3 { font-size: 11px; font-weight: 600; }
+    .vch h3.ic { color: #3498db; } .vch h3.nc { color: #9b59b6; }
+    .cstatus { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 600; }
+    .cstatus.ready     { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.45); }
+    .cstatus.running   { background: rgba(52,152,219,0.15); color: #3498db; }
+    .cstatus.converged { background: rgba(46,204,113,0.15); color: #2ecc71; }
+    .circuit-svg { width: 100%; height: 155px; }
+    .gcrd { background: rgba(255,255,255,0.022); border: 1px solid rgba(255,255,255,0.06); border-radius: 5px; padding: 12px; }
+    .ghdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .ghdr h3 { font-size: 12px; font-weight: 600; }
+    .gst { font-size: 10px; color: rgba(255,255,255,0.38); }
+    #comparison-chart { height: 210px !important; }
+    .vbtns { display: flex; gap: 7px; }
+    .vb { flex: 1; padding: 8px; border-radius: 3px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; transition: all .15s; }
+    .vb.vp { background: #3498db; color: #fff; }
+    .vb.vp:hover { background: #2980b9; }
+    .vb.vp:disabled { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.28); cursor: not-allowed; }
+    .vb.vs { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.65); }
+    .vb.vs:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .vmcard { background: rgba(255,255,255,0.022); border: 1px solid rgba(255,255,255,0.06); border-radius: 5px; padding: 12px; }
+    .vmhdr { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.65); margin-bottom: 8px; }
+    .vmg { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; }
+    .vmi { background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.05); border-radius: 3px; padding: 7px 9px; }
+    .vmil { font-size: 9px; color: rgba(255,255,255,0.38); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 3px; }
+    .vmiv { font-size: 14px; font-weight: 600; }
+    .ic { color: #3498db; } .nc { color: #9b59b6; } .wc { color: #f39c12; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div id="app">
+
+  <!-- NAV -->
+  <header id="nav">
+    <a href="test.html" class="logo">QtorchX</a>
+    <div class="tab-btns">
+      <button class="tab-btn active" data-tab="circuit">Circuit Builder</button>
+      <button class="tab-btn" data-tab="compare">Compare vs Aer</button>
+      <button class="tab-btn" data-tab="vqe">VQE Demo</button>
+    </div>
+    <div class="nav-gap"></div>
+    <a href="https://github.com/notPhani/QTorch/blob/main/README.md" target="_blank" class="nav-lnk">Docs</a>
+    <span class="nav-sep">·</span>
+    <a href="https://github.com/notPhani/Glytch-2025-Submission-QtorchX" target="_blank" class="nav-lnk">GitHub</a>
+  </header>
+
+  <!-- ═══ CIRCUIT BUILDER ═══ -->
+  <div id="tab-circuit" class="tab-panel active">
+    <div id="circuit-main">
+
+      <!-- Gate library -->
+      <div class="pane" id="lp">
+        <div class="pt">Operations</div>
+        <input id="gateSearch" type="text" placeholder="Search gates...">
+        <div id="gate-filters">
+          <button class="fbtn active" data-filter="all">All</button>
+          <button class="fbtn" data-filter="single">1-Q</button>
+          <button class="fbtn" data-filter="multi">2-Q</button>
+          <button class="fbtn" data-filter="measure">M</button>
+        </div>
+        <div id="gate-lib">
+          <button class="gbtn" data-gate="I"    data-type="single">I</button>
+          <button class="gbtn" data-gate="X"    data-type="single">X</button>
+          <button class="gbtn" data-gate="Y"    data-type="single">Y</button>
+          <button class="gbtn" data-gate="Z"    data-type="single">Z</button>
+          <button class="gbtn" data-gate="H"    data-type="single">H</button>
+          <button class="gbtn" data-gate="S"    data-type="single">S</button>
+          <button class="gbtn" data-gate="SDG"  data-type="single">S†</button>
+          <button class="gbtn" data-gate="T"    data-type="single">T</button>
+          <button class="gbtn" data-gate="TDG"  data-type="single">T†</button>
+          <button class="gbtn" data-gate="RX"   data-type="single">RX</button>
+          <button class="gbtn" data-gate="RY"   data-type="single">RY</button>
+          <button class="gbtn" data-gate="RZ"   data-type="single">RZ</button>
+          <button class="gbtn" data-gate="U3"   data-type="single">U3</button>
+          <button class="gbtn" data-gate="SX"   data-type="single">√X</button>
+          <button class="gbtn" data-gate="SXDG" data-type="single">√X†</button>
+          <button class="gbtn" data-gate="CNOT" data-type="multi">CNOT</button>
+          <button class="gbtn" data-gate="CZ"   data-type="multi">CZ</button>
+          <button class="gbtn" data-gate="SWAP" data-type="multi">SWAP</button>
+          <button class="gbtn" data-gate="CRX"  data-type="multi">CRX</button>
+          <button class="gbtn" data-gate="CRZ"  data-type="multi">CRZ</button>
+          <button class="gbtn" data-gate="M"    data-type="measure">M</button>
+        </div>
+        <div id="warn"></div>
+      </div>
+
+      <!-- Circuit canvas -->
+      <div class="pane" id="cp">
+        <div class="ph">
+          <div class="phl"><span class="pt">Circuit</span><span class="ps">q[0..3]</span></div>
+          <div class="phr">
+            <label class="htog"><input type="checkbox" id="noiseToggle"><span class="tsw"></span>Noise</label>
+            <label class="htog"><input type="checkbox" id="persistToggle" checked><span class="tsw"></span>Persist</label>
+            <label class="htog"><input type="checkbox" id="inspectToggle"><span class="tsw"></span>Inspect φ</label>
+            <button id="runBtn" class="run-btn">Run ▶</button>
+            <button id="clearBtn" class="clr-btn">Clear</button>
+          </div>
+        </div>
+        <div id="circuit-inner"><canvas id="circuitCanvas"></canvas></div>
+      </div>
+
+      <!-- Meta/log -->
+      <div class="pane" id="rp">
+        <div class="ph"><span class="pt">Meta / Log</span></div>
+        <textarea id="metaBox" spellcheck="false"># QtorchX Circuit Builder
+# ─────────────────────
+# Drag gates onto grid.
+# Last column = Measure.
+#
+# Noise  → φ-manifold
+# Inspect φ → heatmap
+# Persist  → caching
+#
+# Backend:
+#   uvicorn entry:app
+#   --port 8888
+</textarea>
+      </div>
+    </div>
+
+    <!-- Bottom: histogram + Q-sphere -->
+    <div id="circuit-bottom">
+      <div class="bp">
+        <div class="ph">
+          <span class="pt">Probabilities</span>
+          <span class="ps">ideal (blue) vs noisy (orange)</span>
+        </div>
+        <canvas id="histCanvas"></canvas>
+      </div>
+      <div class="bp" id="qs-cont">
+        <div class="ph"><span class="pt">Q-Sphere</span></div>
+        <canvas id="blochCanvas"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ COMPARE VS AER ═══ -->
+  <div id="tab-compare" class="tab-panel">
+    <div class="cpage">
+
+      <div class="gcard">
+        <div class="ctitle">Circuit Configuration</div>
+        <div class="presets">
+          <span style="font-size:9px;color:rgba(255,255,255,0.28);align-self:center;">Preset:</span>
+          <button class="pbtn" data-preset="bell">Bell State (2q)</button>
+          <button class="pbtn" data-preset="ghz3">GHZ (3q)</button>
+          <button class="pbtn" data-preset="ghz4">GHZ (4q)</button>
+          <button class="pbtn" data-preset="qft3">QFT-like (3q)</button>
+          <button class="pbtn" data-preset="teleport">Teleportation (3q)</button>
+          <button class="pbtn" data-preset="random5">Noisy Circuit (5q)</button>
+        </div>
+        <div class="cmp-row">
+          <div class="cctl">
+            <label>Shots</label>
+            <input type="number" id="cmpShots" value="8192" min="512" max="65536" step="512">
+          </div>
+          <div class="cctl">
+            <label>Noise Level &nbsp;<span class="nlv" id="nlVal">0.50</span></label>
+            <input type="range" id="noiseLevel" min="0" max="1" step="0.05" value="0.5">
+          </div>
+        </div>
+        <div id="cmpErr"></div>
+        <button class="brun" id="cmpRunBtn" onclick="runComparison()">▶ &nbsp;Run Comparison</button>
+      </div>
+
+      <div id="cmpResults" class="hidden" style="display:flex;flex-direction:column;gap:12px;">
+        <div id="agBadge" class="abadge ab-hi" style="display:none;"></div>
+
+        <div class="mstrip">
+          <div class="mc"><div class="v" id="mFidelity">—</div><div class="l">Engine Fidelity</div></div>
+          <div class="mc"><div class="v pu" id="mTVD">—</div><div class="l">TVD (noise diff)</div></div>
+          <div class="mc"><div class="v" id="mQtxTime">—</div><div class="l">QtorchX Time</div></div>
+          <div class="mc"><div class="v pu" id="mAerTime">—</div><div class="l">Aer Time</div></div>
+          <div class="mc"><div class="v go" id="mShots">—</div><div class="l">Shots</div></div>
+        </div>
+
+        <div class="tcol">
+          <div class="ecrd">
+            <div class="eh"><div class="edot qtx"></div><div><h3 style="color:#3498db">QtorchX φ-Manifold</h3><div class="esub" id="qtxNoiseSub">6-channel spatiotemporal φ-field</div></div></div>
+            <canvas id="qtxChart"></canvas>
+            <div class="etim" id="qtxTiming"></div>
+          </div>
+          <div class="ecrd">
+            <div class="eh"><div class="edot aer"></div><div><h3 style="color:#9b59b6">Qiskit Aer</h3><div class="esub" id="aerNoiseSub">Depolarizing + Thermal Relaxation</div></div></div>
+            <canvas id="aerChart"></canvas>
+            <div class="etim" id="aerTiming"></div>
+          </div>
+        </div>
+
+        <div class="gcard">
+          <div class="ctitle">Noisy Overlay — QtorchX (blue) vs Qiskit Aer (purple)</div>
+          <canvas id="overlayChart"></canvas>
+        </div>
+
+        <div class="gcard">
+          <div class="ctitle">Probability Table</div>
+          <div class="prow">
+            <table>
+              <thead><tr>
+                <th>State</th><th>Ideal</th>
+                <th>QtorchX noisy</th><th></th>
+                <th>Qiskit Aer noisy</th><th></th>
+                <th>Δ TVD</th>
+              </tr></thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ VQE DEMO ═══ -->
+  <div id="tab-vqe" class="tab-panel">
+    <div class="vpage">
+
+      <div class="vtop">
+        <h1>VQE Live Demo: Ideal vs Noisy</h1>
+        <p>H₂ molecule optimization — watch noise affect convergence in real time · 25 random scenarios</p>
+      </div>
+
+      <div class="vgrid">
+        <div class="vcol">
+          <div class="vcc ideal">
+            <div class="vch">
+              <h3 class="ic">Ideal Circuit</h3>
+              <span id="ideal-circuit-status" class="cstatus ready">Ready</span>
+            </div>
+            <svg id="ideal-circuit-svg" class="circuit-svg"></svg>
+          </div>
+          <div class="vcc noisy">
+            <div class="vch">
+              <h3 class="nc">Noisy Circuit</h3>
+              <span id="noisy-circuit-status" class="cstatus ready">Ready</span>
+            </div>
+            <svg id="noisy-circuit-svg" class="circuit-svg"></svg>
+          </div>
+        </div>
+
+        <div class="vcol">
+          <div class="gcrd">
+            <div class="ghdr">
+              <h3>Energy Convergence</h3>
+              <span id="graph-status" class="gst">Click Run to start...</span>
+            </div>
+            <canvas id="comparison-chart"></canvas>
+          </div>
+          <div class="vbtns">
+            <button id="run-comparison-btn" class="vb vp">Run Comparison</button>
+            <button id="reset-demo-btn" class="vb vs">Reset</button>
+          </div>
+          <div class="vmcard hidden" id="metrics-card">
+            <div class="vmhdr">Results Summary</div>
+            <div class="vmg">
+              <div class="vmi"><div class="vmil">Ideal Iterations</div><div class="vmiv ic" id="ideal-iters">--</div></div>
+              <div class="vmi"><div class="vmil">Noisy Iterations</div><div class="vmiv nc" id="noisy-iters">--</div></div>
+              <div class="vmi"><div class="vmil">Extra Iterations</div><div class="vmiv wc" id="iter-diff">--</div></div>
+              <div class="vmi"><div class="vmil">Ideal Final Energy</div><div class="vmiv ic" id="ideal-energy">--</div></div>
+              <div class="vmi"><div class="vmil">Noisy Final Energy</div><div class="vmiv nc" id="noisy-energy">--</div></div>
+              <div class="vmi"><div class="vmil">Energy Difference</div><div class="vmiv wc" id="energy-diff">--</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- LOADING OVERLAY -->
+  <div id="loadingOverlay" class="lov hidden">
+    <div style="text-align:center">
+      <div class="lring"></div>
+      <div class="lmsg" id="loadingMessage">Initializing...</div>
+    </div>
+  </div>
+
+</div>
+<script>
+'use strict';
+
+// ════════════════════════════════════════════════════════════
+// ANIMATED BACKGROUND (bezier field from webgl_test.html)
+// ════════════════════════════════════════════════════════════
+const bgC = document.getElementById('bg-canvas');
+const bgX = bgC.getContext('2d');
+let bgW, bgH, bgDpr;
+function resizeBg() {
+  bgDpr = window.devicePixelRatio || 1;
+  bgW = window.innerWidth; bgH = window.innerHeight;
+  bgC.width = bgW * bgDpr; bgC.height = bgH * bgDpr;
+  bgX.setTransform(bgDpr, 0, 0, bgDpr, 0, 0);
+}
+window.addEventListener('resize', resizeBg);
+resizeBg();
+const BG_LINES = 45;
+let bgT = 0;
+function renderBg() {
+  bgX.clearRect(0, 0, bgW, bgH);
+  bgT += 0.002;
+  bgX.lineCap = 'round';
+  const grad = bgX.createLinearGradient(0, 0, bgW, 0);
+  grad.addColorStop(0, '#3498db');
+  grad.addColorStop(0.5, '#ffffff');
+  grad.addColorStop(1, '#9b59b6');
+  const gp = (p0,p1,p2,p3,t) => { const u=1-t; return u*u*u*p0+3*u*u*t*p1+3*u*t*t*p2+t*t*t*p3; };
+  for (let i = 0; i < BG_LINES; i++) {
+    const y0 = i*(bgH*1.5/BG_LINES) - bgH*0.25;
+    const cp1x = bgW*0.35 + Math.sin(bgT*0.8+i*0.15)*bgW*0.2;
+    const cp1y = y0 + Math.cos(bgT*0.6+i*0.08)*350;
+    const cp2x = bgW*0.65 + Math.cos(bgT*0.9-i*0.12)*bgW*0.2;
+    const cp2y = y0 + Math.sin(bgT*0.7-i*0.1)*350;
+    const endY = y0 + Math.sin(bgT*0.5+i*0.05)*150;
+    const dw = 0.5 + Math.abs(Math.sin(bgT+i*0.2))*1.2;
+    const da = 0.055 + Math.abs(Math.cos(bgT+i*0.1))*0.11;
+    bgX.beginPath();
+    bgX.lineWidth = dw; bgX.globalAlpha = da; bgX.strokeStyle = grad;
+    bgX.moveTo(-100, y0);
+    bgX.bezierCurveTo(cp1x,cp1y,cp2x,cp2y,bgW+100,endY);
+    bgX.stroke(); bgX.globalAlpha = 1;
+    if (i%3===0) {
+      const t = (bgT*0.15+i*0.07)%1;
+      const ax=gp(-100,cp1x,cp2x,bgW+100,t), ay=gp(y0,cp1y,cp2y,endY,t);
+      const at=Math.min(t+0.005,1);
+      const angle=Math.atan2(gp(y0,cp1y,cp2y,endY,at)-ay, gp(-100,cp1x,cp2x,bgW+100,at)-ax);
+      bgX.save(); bgX.translate(ax,ay); bgX.rotate(angle);
+      bgX.beginPath(); bgX.moveTo(4,0); bgX.lineTo(-6,-3.5); bgX.lineTo(-6,3.5); bgX.closePath();
+      bgX.fillStyle=`rgba(255,255,255,${da+0.3})`; bgX.fill(); bgX.restore();
+    }
+  }
+  requestAnimationFrame(renderBg);
+}
+renderBg();
+
+// ════════════════════════════════════════════════════════════
+// TAB SWITCHING
+// ════════════════════════════════════════════════════════════
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const id = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab===id));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id==='tab-'+id));
+    if (id==='circuit') { syncGeometry(); syncHistCanvas(); resizeQSphere(); }
+  });
+});
+
+// ════════════════════════════════════════════════════════════
+// Q-SPHERE  (Three.js)
+// ════════════════════════════════════════════════════════════
+let qsScene, qsCamera, qsRenderer, qsOk = false;
+let qsArrows = [];
+
+function phaseColor(phi) {
+  return new THREE.Color(`hsl(${((phi+Math.PI)/(2*Math.PI))*360},85%,65%)`);
+}
+function binC(n,k) {
+  if (k<0||k>n) return 0; if (k===0||k===n) return 1;
+  let r=1; for (let i=1;i<=k;i++) r*=(n-i+1)/i; return Math.round(r);
+}
+function qspos(lbl,nQ) {
+  const hw=(lbl.match(/1/g)||[]).length, theta=(hw/nQ)*Math.PI;
+  const tot=binC(nQ,hw); let ring=0;
+  for (let i=0;i<parseInt(lbl,2);i++) {
+    if ((i.toString(2).padStart(nQ,'0').match(/1/g)||[]).length===hw) ring++;
+  }
+  const phi=(ring/tot)*2*Math.PI;
+  return new THREE.Vector3(Math.sin(theta)*Math.cos(phi),Math.cos(theta),Math.sin(theta)*Math.sin(phi));
+}
+function initQSphere() {
+  if (typeof THREE==='undefined') return;
+  const cv=document.getElementById('blochCanvas'), ct=document.getElementById('qs-cont');
+  if (!cv||!ct) return;
+  const r=ct.getBoundingClientRect();
+  qsScene=new THREE.Scene(); qsScene.background=new THREE.Color(0x090d1a);
+  qsCamera=new THREE.PerspectiveCamera(50,r.width/r.height,0.1,1000);
+  qsCamera.position.set(3.2,2.8,4.5); qsCamera.lookAt(0,0,0);
+  qsRenderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+  qsRenderer.setSize(r.width-4,Math.max(80,r.height-36));
+  qsRenderer.setPixelRatio(window.devicePixelRatio);
+  qsScene.add(new THREE.AmbientLight(0xffffff,0.9));
+  const dl=new THREE.DirectionalLight(0xffffff,0.8); dl.position.set(5,5,5); qsScene.add(dl);
+  const dl2=new THREE.DirectionalLight(0x3498db,0.4); dl2.position.set(-5,-3,2); qsScene.add(dl2);
+  // wireframe sphere — visible blue tint
+  qsScene.add(new THREE.Mesh(new THREE.SphereGeometry(1.5,24,16),
+    new THREE.MeshBasicMaterial({color:0x1e4a7a,wireframe:true,transparent:true,opacity:0.35})));
+  // equator ring — bright blue
+  const eq=new THREE.Mesh(new THREE.TorusGeometry(1.5,0.022,8,64),
+    new THREE.MeshBasicMaterial({color:0x3498db,transparent:true,opacity:0.9}));
+  eq.rotation.x=Math.PI/2; qsScene.add(eq);
+  // axis lines
+  const axMat=new THREE.LineBasicMaterial({color:0x3498db,transparent:true,opacity:0.4});
+  [[new THREE.Vector3(-1.8,0,0),new THREE.Vector3(1.8,0,0)],
+   [new THREE.Vector3(0,-1.8,0),new THREE.Vector3(0,1.8,0)],
+   [new THREE.Vector3(0,0,-1.8),new THREE.Vector3(0,0,1.8)]].forEach(([a,b])=>{
+    const g=new THREE.BufferGeometry().setFromPoints([a,b]);
+    qsScene.add(new THREE.Line(g,axMat));
+  });
+  // pole labels
+  [['|0⟩',1.95],['|1⟩',-1.95]].forEach(([t,y])=>{
+    const c=document.createElement('canvas'); c.width=160; c.height=72;
+    const cx=c.getContext('2d');
+    cx.fillStyle='rgba(52,152,219,0.9)'; cx.font='bold 28px monospace'; cx.textAlign='center';
+    cx.fillText(t,80,46);
+    const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true}));
+    sp.position.set(0,y,0); sp.scale.set(1.1,0.55,1); qsScene.add(sp);
+  });
+  qsOk=true; animateQS();
+}
+function clearQSArrows() {
+  qsArrows.forEach(({arrow,lbl})=>{qsScene.remove(arrow);if(lbl)qsScene.remove(lbl);}); qsArrows=[];
+}
+function updateQSphere(states) {
+  if (!qsOk) return; clearQSArrows();
+  const nQ=states[0]?.label?.length||4;
+  [...states].sort((a,b)=>b.probability-a.probability).forEach(s=>{
+    if (s.probability<0.001) return;
+    const lbl=s.label||s.state||'0000', dir=qspos(lbl,nQ);
+    const len=0.2+s.probability*1.3, col=phaseColor(s.phi||0);
+    const arrow=new THREE.ArrowHelper(dir,new THREE.Vector3(0,0,0),len,col.getHex(),0.15,0.10);
+    qsScene.add(arrow);
+    let lsp=null;
+    if (s.probability>0.05) {
+      const c=document.createElement('canvas'); c.width=160; c.height=56;
+      const cx=c.getContext('2d');
+      cx.fillStyle=col.getStyle(); cx.font='bold 24px monospace'; cx.textAlign='center';
+      cx.fillText(`|${lbl}⟩`,80,24); cx.fillStyle='#fff'; cx.font='bold 16px monospace';
+      cx.fillText(`${(s.probability*100).toFixed(1)}%`,80,44);
+      lsp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c)}));
+      lsp.position.copy(dir.clone().multiplyScalar(len+0.3)); lsp.scale.set(0.8,0.28,1);
+      qsScene.add(lsp);
+    }
+    qsArrows.push({arrow,lbl:lsp});
+  });
+}
+function animateQS() {
+  if (!qsOk) return;
+  requestAnimationFrame(animateQS);
+  qsScene.rotation.y+=0.003;
+  qsRenderer.render(qsScene,qsCamera);
+}
+function resizeQSphere() {
+  if (!qsOk) return;
+  const r=document.getElementById('qs-cont').getBoundingClientRect();
+  qsCamera.aspect=r.width/r.height; qsCamera.updateProjectionMatrix();
+  qsRenderer.setSize(r.width-4,Math.max(80,r.height-36));
+}
+window.addEventListener('load',()=>setTimeout(initQSphere,150));
+
+// ════════════════════════════════════════════════════════════
+// CIRCUIT BUILDER
+// ════════════════════════════════════════════════════════════
+const N_QUBITS=4, N_STEPS=15, MAX_GATES=15, ROWS=N_QUBITS+1;
+const API='http://127.0.0.1:8888';
+
+const GC = {
+  I:{fill:'#bdc3c7',stroke:'#95a5a6',text:'#2c3e50'},
+  X:{fill:'#3498db',stroke:'#2980b9',text:'#fff'},
+  Y:{fill:'#5dade2',stroke:'#3498db',text:'#fff'},
+  Z:{fill:'#a29bfe',stroke:'#6c5ce7',text:'#fff'},
+  H:{fill:'#9b59b6',stroke:'#8e44ad',text:'#fff'},
+  S:{fill:'#1abc9c',stroke:'#16a085',text:'#fff'},
+  SDG:{fill:'#48c9b0',stroke:'#1abc9c',text:'#fff'},
+  T:{fill:'#2ecc71',stroke:'#27ae60',text:'#fff'},
+  TDG:{fill:'#58d68d',stroke:'#2ecc71',text:'#fff'},
+  RX:{fill:'#f39c12',stroke:'#e67e22',text:'#fff'},
+  RY:{fill:'#f1c40f',stroke:'#f39c12',text:'#2c3e50'},
+  RZ:{fill:'#e67e22',stroke:'#d35400',text:'#fff'},
+  U3:{fill:'#ff8787',stroke:'#ff6b6b',text:'#fff'},
+  SX:{fill:'#fd79a8',stroke:'#e84393',text:'#fff'},
+  SXDG:{fill:'#e84393',stroke:'#c0392b',text:'#fff'},
+  CNOT:{fill:'#e74c3c',stroke:'#c0392b',text:'#fff'},
+  CZ:{fill:'#c0392b',stroke:'#922b21',text:'#fff'},
+  SWAP:{fill:'#8e44ad',stroke:'#6c3483',text:'#fff'},
+  CRX:{fill:'#e67e22',stroke:'#d35400',text:'#fff'},
+  CRZ:{fill:'#d35400',stroke:'#ba4a00',text:'#fff'},
+  M:{fill:'#2980b9',stroke:'#1f618d',text:'#fff'},
+  DEFAULT:{fill:'#34495e',stroke:'#2c3e50',text:'#fff'}
+};
+const TWO_Q = new Set(['CNOT','CZ','SWAP','CRX','CRZ']);
+const GATE_TYPES = {I:'single',X:'single',Y:'single',Z:'single',H:'single',S:'single',SDG:'single',T:'single',TDG:'single',RX:'single',RY:'single',RZ:'single',U3:'single',SX:'single',SXDG:'single',CNOT:'multi',CZ:'multi',SWAP:'multi',CRX:'multi',CRZ:'multi',M:'measure'};
+function gc(n){ return GC[n.toUpperCase()]||GC.DEFAULT; }
+
+const circuit=Array.from({length:N_QUBITS},()=>Array(N_STEPS).fill(null));
+let gateList=[], histData=null, dragging=false, dragGate=null, dragX=0, dragY=0;
+let searchQ='', activeF=new Set(['all']);
+
+const circ=document.getElementById('circuitCanvas');
+const ctx=circ.getContext('2d');
+let W,H,cW,cH;
+
+function syncGeometry(){
+  const ct=document.getElementById('circuit-inner'), r=ct.getBoundingClientRect();
+  const pad=2, dpr=window.devicePixelRatio||1;
+  const dw=Math.max(1,r.width-2*pad), dh=Math.max(1,r.height-2*pad);
+  circ.width=dw*dpr; circ.height=dh*dpr;
+  circ.style.width=dw+'px'; circ.style.height=dh+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  W=dw; H=dh; cW=W/N_STEPS; cH=H/ROWS;
+}
+syncGeometry();
+
+function syncHistCanvas(){
+  const hc=document.getElementById('histCanvas'), ct=document.getElementById('circuit-bottom').children[0];
+  if(!hc||!ct) return;
+  const r=ct.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+  const dw=Math.max(1,r.width-12), dh=Math.max(1,r.height-36);
+  hc.width=dw*dpr; hc.height=dh*dpr;
+  hc.style.width=dw+'px'; hc.style.height=dh+'px';
+  hc.getContext('2d').setTransform(dpr,0,0,dpr,0,0);
+  drawHistogram();
+}
+window.addEventListener('load',syncHistCanvas);
+window.addEventListener('resize',()=>{ syncGeometry(); drawCircuit(); syncHistCanvas(); resizeQSphere(); });
+
+// Gate filter/search
+function updateGateVis(){
+  document.querySelectorAll('.gbtn').forEach(b=>{
+    const g=b.dataset.gate; if(!g) return;
+    const type=GATE_TYPES[g]||'single';
+    let show=true;
+    if(searchQ&&!g.toLowerCase().includes(searchQ)) show=false;
+    if(!activeF.has('all')) show=show&&activeF.has(type);
+    b.style.display=show?'':'none';
+  });
+}
+document.getElementById('gateSearch').addEventListener('input',e=>{
+  searchQ=e.target.value.trim().toLowerCase(); updateGateVis();
+});
+document.querySelectorAll('.fbtn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    const f=b.dataset.filter;
+    if(f==='all'){
+      activeF=new Set(['all']);
+      document.querySelectorAll('.fbtn').forEach(x=>x.classList.toggle('active',x.dataset.filter==='all'));
+    } else {
+      activeF.delete('all');
+      document.querySelector('[data-filter="all"]').classList.remove('active');
+      activeF.has(f)?activeF.delete(f):activeF.add(f);
+      b.classList.toggle('active',activeF.has(f));
+      if(activeF.size===0){ activeF.add('all'); document.querySelector('[data-filter="all"]').classList.add('active'); }
+    }
+    updateGateVis();
+  });
+});
+
+// Gate drag
+document.querySelectorAll('.gbtn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.gbtn').forEach(x=>x.classList.remove('ag'));
+    b.classList.add('ag');
+  });
+  b.addEventListener('mousedown',e=>{
+    if(!b.dataset.gate) return;
+    dragging=true; dragGate={name:b.dataset.gate};
+    const r=circ.getBoundingClientRect();
+    dragX=r.width*0.15; dragY=r.height*0.25;
+    drawCircuit(); e.preventDefault();
+  });
+});
+
+function cellXY(x,y){ const t=Math.floor(x/cW),q=Math.floor(y/cH); if(t<0||t>=N_STEPS||q<0||q>=ROWS) return{q:null,t:null}; return{q,t}; }
+function gCount(){ let c=0; for(let q=0;q<N_QUBITS;q++) for(let t=0;t<N_STEPS;t++) if(circuit[q][t]) c++; return c; }
+function arrEq(a,b){ return a.length===b.length&&a.every((v,i)=>v===b[i]); }
+function pairQ(dq){ const tgt=dq; let ctl=tgt+1; if(ctl>=N_QUBITS) ctl=tgt-1; if(ctl<0||ctl===tgt) return null; return[ctl,tgt]; }
+
+function placeGate(name,q,t){
+  if(q==null||t==null||q<0||q>=N_QUBITS||t>=N_STEPS-1) return false;
+  const qubits=TWO_Q.has(name)?pairQ(q):[q]; if(!qubits) return false;
+  let ex=null;
+  for(const qq of qubits){ const g=circuit[qq][t]; if(g){ex=g;break;} }
+  if(ex&&ex.name===name&&arrEq(ex.qubits,qubits)){
+    gateList=gateList.filter(g=>!(g.t===t&&arrEq(g.qubits,ex.qubits)));
+    for(const qq of ex.qubits) circuit[qq][t]=null; return true;
+  }
+  for(const qq of qubits){ if(circuit[qq][t]&&circuit[qq][t]!==ex){setWarn('Time step occupied.');return false;} }
+  if(!ex&&gCount()>=MAX_GATES){setWarn(`Gate limit: ${MAX_GATES}.`);return false;}
+  setWarn('');
+  if(ex){ gateList=gateList.filter(g=>!(g.t===t&&arrEq(g.qubits,ex.qubits))); for(const qq of ex.qubits) circuit[qq][t]=null; }
+  const obj={name,qubits:qubits.slice(),t};
+  gateList.push(obj); for(const qq of qubits) circuit[qq][t]=obj; return true;
+}
+function setWarn(m){ document.getElementById('warn').textContent=m; }
+function clearCircuit(){
+  for(let q=0;q<N_QUBITS;q++) for(let t=0;t<N_STEPS;t++) circuit[q][t]=null;
+  gateList=[]; histData=null; window.lastPhi=null;
+  drawCircuit(); drawHistogram();
+  document.getElementById('metaBox').value='# Circuit cleared.';
+}
+document.getElementById('clearBtn').addEventListener('click',clearCircuit);
+
+// Draw circuit
+function drawCircuit(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0b0f1c'; ctx.fillRect(0,0,W,H);
+  // row bands (alternate subtle shading)
+  for(let r=0;r<N_QUBITS;r++){
+    if(r%2===0){ ctx.fillStyle='rgba(52,152,219,0.04)'; ctx.fillRect(0,r*cH,W,cH); }
+  }
+  for(let r=0;r<ROWS;r++){
+    const y=(r+0.5)*cH;
+    // qubit wire line
+    ctx.strokeStyle='rgba(52,152,219,0.18)'; ctx.lineWidth=1;
+    ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(cW*0.6,y); ctx.lineTo(W,y); ctx.stroke();
+    ctx.setLineDash([]);
+    // row separator
+    ctx.strokeStyle='rgba(255,255,255,0.08)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(0,r*cH); ctx.lineTo(W,r*cH); ctx.stroke();
+    // label
+    ctx.fillStyle='rgba(255,255,255,0.75)'; ctx.font='bold 10px "IBM Plex Mono",monospace';
+    ctx.textAlign='left'; ctx.textBaseline='middle';
+    ctx.fillText(r<N_QUBITS?`q[${r}]`:`c[0]`,4,y);
+  }
+  ctx.strokeStyle='rgba(255,255,255,0.08)'; ctx.lineWidth=1;
+  for(let t=0;t<N_STEPS;t++){ const x=t*cW; ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  // measure column highlight
+  ctx.fillStyle='rgba(52,152,219,0.1)'; ctx.fillRect((N_STEPS-1)*cW,0,cW,N_QUBITS*cH);
+  ctx.strokeStyle='rgba(52,152,219,0.3)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo((N_STEPS-1)*cW,0); ctx.lineTo((N_STEPS-1)*cW,N_QUBITS*cH); ctx.stroke();
+  drawPhiHeat();
+  const drawn=new Set();
+  for(let q=0;q<N_QUBITS;q++) for(let t=0;t<N_STEPS;t++){
+    const g=circuit[q][t]; if(!g||g.name==='M') continue;
+    const k=`${g.name}:${g.qubits}:${g.t}`; if(drawn.has(k)) continue;
+    drawn.add(k); drawGlyph(g);
+  }
+  drawMeas();
+  if(dragging&&dragGate) drawGhost();
+}
+
+function drawGlyph(gate){
+  const{name,qubits,t}=gate, pad=4;
+  if(TWO_Q.has(name)&&qubits.length===2){
+    const[qA,qB]=qubits, ctrl=Math.min(qA,qB), tgt=Math.max(qA,qB);
+    const xC=t*cW+cW/2, yC=ctrl*cH+cH/2, yT=tgt*cH+cH/2, col=gc(name);
+    ctx.strokeStyle=col.fill; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(xC,yC); ctx.lineTo(xC,yT); ctx.stroke();
+    ctx.fillStyle=col.fill; ctx.beginPath(); ctx.arc(xC,yC,Math.min(cH,cW)*0.18,0,2*Math.PI); ctx.fill();
+    if(name==='CNOT'||name==='CRX'){
+      ctx.strokeStyle=col.fill; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(xC,yT,Math.min(cH,cW)*0.18,0,2*Math.PI); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(xC-6,yT); ctx.lineTo(xC+6,yT); ctx.moveTo(xC,yT-6); ctx.lineTo(xC,yT+6); ctx.stroke();
+    } else {
+      const s=20,bx=xC-s/2,by=yT-s/2;
+      const g2=ctx.createLinearGradient(bx,by,bx,by+s); g2.addColorStop(0,col.fill); g2.addColorStop(1,col.stroke);
+      ctx.fillStyle=g2; ctx.fillRect(bx,by,s,s);
+      ctx.strokeStyle=col.stroke; ctx.lineWidth=1.5; ctx.strokeRect(bx,by,s,s);
+      ctx.fillStyle=col.text; ctx.font='bold 9px "IBM Plex Mono"';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(name==='SWAP'?'×':name.slice(1),xC,yT);
+    }
+    return;
+  }
+  const q=qubits[0], x=t*cW, y=q*cH, w=cW-2*pad, h=cH-2*pad, col=gc(name);
+  const grad=ctx.createLinearGradient(x+pad,y+pad,x+pad,y+pad+h);
+  grad.addColorStop(0,col.fill); grad.addColorStop(1,col.stroke);
+  ctx.fillStyle=grad; ctx.fillRect(x+pad,y+pad,w,h);
+  ctx.strokeStyle=col.stroke; ctx.lineWidth=2; ctx.strokeRect(x+pad,y+pad,w,h);
+  ctx.fillStyle=col.text; ctx.font='bold 10px "IBM Plex Mono",monospace';
+  ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(name,x+cW/2,y+cH/2);
+}
+
+function drawMeas(){
+  const t=N_STEPS-1, pad=4, col=gc('M');
+  for(let q=0;q<N_QUBITS;q++){
+    const x=t*cW, y=q*cH, w=cW-2*pad, h=cH-2*pad;
+    const grad=ctx.createLinearGradient(x+pad,y+pad,x+pad,y+pad+h);
+    grad.addColorStop(0,col.fill); grad.addColorStop(1,col.stroke);
+    ctx.fillStyle=grad; ctx.fillRect(x+pad,y+pad,w,h);
+    ctx.strokeStyle=col.stroke; ctx.lineWidth=2; ctx.strokeRect(x+pad,y+pad,w,h);
+    ctx.fillStyle=col.text; ctx.font='bold 10px "IBM Plex Mono"';
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('M',x+cW/2,y+cH/2);
+  }
+}
+
+function drawGhost(){
+  const pad=4, w=cW-2*pad, h=cH-2*pad;
+  const{q,t}=cellXY(dragX,dragY);
+  if(q!==null&&q<N_QUBITS&&t!==N_STEPS-1){
+    const col=gc(dragGate.name);
+    ctx.fillStyle=col.fill+'22'; ctx.fillRect(t*cW+1,q*cH+1,cW-2,cH-2);
+  }
+  const col=gc(dragGate.name);
+  const grad=ctx.createLinearGradient(dragX-w/2,dragY-h/2,dragX-w/2,dragY+h/2);
+  grad.addColorStop(0,col.fill); grad.addColorStop(1,col.stroke);
+  ctx.fillStyle=grad; ctx.fillRect(dragX-w/2,dragY-h/2,w,h);
+  ctx.strokeStyle=col.stroke; ctx.lineWidth=2; ctx.strokeRect(dragX-w/2,dragY-h/2,w,h);
+  ctx.fillStyle=col.text; ctx.font='bold 10px "IBM Plex Mono"';
+  ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(dragGate.name,dragX,dragY);
+}
+
+window.addEventListener('mousemove',e=>{
+  if(!dragging||!dragGate) return;
+  const r=circ.getBoundingClientRect(); dragX=e.clientX-r.left; dragY=e.clientY-r.top; drawCircuit();
+});
+window.addEventListener('mouseup',e=>{
+  if(!dragging||!dragGate) return; dragging=false;
+  const r=circ.getBoundingClientRect();
+  const{q,t}=cellXY(e.clientX-r.left,e.clientY-r.top);
+  if(q!==null&&q<N_QUBITS&&t!==N_STEPS-1) placeGate(dragGate.name,q,t);
+  dragGate=null; drawCircuit();
+});
+circ.addEventListener('click',e=>{
+  if(dragging||dragGate) return;
+  const r=circ.getBoundingClientRect();
+  const{q,t}=cellXY(e.clientX-r.left,e.clientY-r.top);
+  if(q==null||q>=N_QUBITS||t===N_STEPS-1) return;
+  const g=circuit[q][t]; if(!g) return;
+  placeGate(g.name,q,g.t); drawCircuit();
+});
+
+// Histogram
+function drawHistogram(){
+  const hc=document.getElementById('histCanvas'); if(!hc) return;
+  const hx=hc.getContext('2d');
+  const w=parseFloat(hc.style.width)||hc.width/(window.devicePixelRatio||1);
+  const h=parseFloat(hc.style.height)||hc.height/(window.devicePixelRatio||1);
+  hx.clearRect(0,0,w,h); hx.fillStyle='rgba(0,0,0,0.55)'; hx.fillRect(0,0,w,h);
+  const m={left:50,right:14,top:28,bottom:80};
+  const pw=w-m.left-m.right, ph=h-m.top-m.bottom, ns=1<<N_QUBITS;
+  hx.strokeStyle='rgba(255,255,255,0.3)'; hx.lineWidth=1.5;
+  hx.beginPath(); hx.moveTo(m.left,m.top); hx.lineTo(m.left,m.top+ph); hx.lineTo(m.left+pw,m.top+ph); hx.stroke();
+  hx.fillStyle='rgba(255,255,255,0.45)'; hx.font='9px "IBM Plex Mono"'; hx.textAlign='right'; hx.textBaseline='middle';
+  for(let i=0;i<=5;i++){
+    const p=i/5, y=m.top+ph-p*ph;
+    hx.fillText(p.toFixed(1),m.left-6,y);
+    hx.strokeStyle='rgba(255,255,255,0.05)'; hx.lineWidth=0.8;
+    hx.beginPath(); hx.moveTo(m.left,y); hx.lineTo(m.left+pw,y); hx.stroke();
+  }
+  hx.save(); hx.translate(12,m.top+ph/2); hx.rotate(-Math.PI/2);
+  hx.textAlign='center'; hx.fillStyle='rgba(255,255,255,0.7)'; hx.font='10px "IBM Plex Mono"';
+  hx.fillText('Probability',0,0); hx.restore();
+  const bw=pw/ns;
+  hx.fillStyle='rgba(255,255,255,0.4)'; hx.font='8px "IBM Plex Mono"'; hx.textAlign='center'; hx.textBaseline='top';
+  for(let i=0;i<ns;i++) hx.fillText('|'+i.toString(2).padStart(N_QUBITS,'0')+'⟩',m.left+(i+0.5)*bw,m.top+ph+4);
+  hx.fillStyle='rgba(255,255,255,0.8)'; hx.font='10px "IBM Plex Mono"'; hx.textAlign='center';
+  hx.fillText('Quantum States',m.left+pw/2,h-8);
+  hx.fillStyle='#3498db'; hx.fillRect(m.left+6,m.top+6,11,7);
+  hx.fillStyle='rgba(255,255,255,0.7)'; hx.font='9px sans-serif'; hx.textAlign='left'; hx.fillText('Ideal',m.left+20,m.top+11);
+  hx.fillStyle='#e67e22'; hx.fillRect(m.left+60,m.top+6,11,7); hx.fillText('Noisy',m.left+74,m.top+11);
+  if(histData){
+    const{ideal,noisy}=histData;
+    const hasN=noisy&&Object.keys(noisy).length>0;
+    const sbw=hasN?(bw-3)/2:bw-3;
+    for(let i=0;i<ns;i++){
+      const s=i.toString(2).padStart(N_QUBITS,'0'), bx=m.left+i*bw;
+      const ip=ideal[s]||0, np=(noisy&&noisy[s])||0;
+      if(ip>0){hx.fillStyle='#3498db';hx.fillRect(bx+1,m.top+ph-ip*ph,sbw,ip*ph);}
+      if(hasN&&np>0){hx.fillStyle='#e67e22';hx.fillRect(bx+sbw+2,m.top+ph-np*ph,sbw,np*ph);}
+    }
+  } else {
+    hx.fillStyle='rgba(255,255,255,0.2)'; hx.font='11px "IBM Plex Mono"'; hx.textAlign='center'; hx.textBaseline='middle';
+    hx.fillText('Run a circuit to see results',m.left+pw/2,m.top+ph/2);
+  }
+}
+
+// Phi heatmap
+function drawPhiHeat(){
+  if(!window.lastPhi||!document.getElementById('inspectToggle').checked) return;
+  const phi=window.lastPhi; let lo=Infinity,hi=-Infinity;
+  for(const row of phi) for(const v of row){lo=Math.min(lo,v);hi=Math.max(hi,v);}
+  if(hi===lo) return;
+  const range=hi-lo;
+  function smp(q,t){const qq=Math.max(0,Math.min(N_QUBITS-1,Math.floor(q))),tt=Math.max(0,Math.min(phi[0].length-1,Math.floor(t)));return phi[qq][tt];}
+  function bil(q,t){const q0=Math.floor(q),q1=Math.min(q0+1,N_QUBITS-1),t0=Math.floor(t),t1=Math.min(t0+1,phi[0].length-1);const v0=smp(q0,t0)*(1-t+t0)+smp(q0,t1)*(t-t0),v1=smp(q1,t0)*(1-t+t0)+smp(q1,t1)*(t-t0);return v0*(1-q+q0)+v1*(q-q0);}
+  const sub=8;
+  for(let q=0;q<N_QUBITS;q++) for(let t=0;t<N_STEPS;t++){
+    const cc=document.createElement('canvas'); cc.width=sub; cc.height=sub;
+    const cx=cc.getContext('2d'), id=cx.createImageData(sub,sub);
+    for(let py=0;py<sub;py++) for(let px=0;px<sub;px++){
+      const n=(bil(q+py/sub,t+px/sub)-lo)/range;
+      const c=phiCol(Math.max(0,Math.min(1,n))), i=(py*sub+px)*4;
+      id.data[i]=c.r;id.data[i+1]=c.g;id.data[i+2]=c.b;id.data[i+3]=c.a;
+    }
+    cx.putImageData(id,0,0); ctx.imageSmoothingEnabled=true;
+    ctx.drawImage(cc,t*cW+2,q*cH+2,cW-4,cH-4);
+  }
+}
+function phiCol(n){
+  if(n<.33){const t=n/.33;return{r:Math.round(t*255),g:0,b:0,a:Math.round((0.4+t*0.2)*255)};}
+  if(n<.66){const t=(n-.33)/.33;return{r:255,g:Math.round(t*165),b:0,a:Math.round((0.6+t*0.15)*255)};}
+  const t=(n-.66)/.34;return{r:255,g:Math.round(165+t*90),b:Math.round(t*255),a:Math.round((0.75+t*0.25)*255)};
+}
+
+// Loading
+const LOAD_MSGS=['Building quantum circuit...','Initializing state vectors...','Applying quantum gates...','Computing observables...','Extracting φ-manifold...','Finalizing simulation...'];
+let lInt=null, lIdx=0;
+function showLoading(msg){
+  document.getElementById('loadingOverlay').classList.remove('hidden');
+  const ml=document.getElementById('loadingMessage');
+  if(msg){ml.textContent=msg;return;}
+  lIdx=0; ml.textContent=LOAD_MSGS[0];
+  if(lInt) clearInterval(lInt);
+  lInt=setInterval(()=>{lIdx=(lIdx+1)%LOAD_MSGS.length;ml.textContent=LOAD_MSGS[lIdx];},1400);
+}
+function hideLoading(){
+  if(lInt){clearInterval(lInt);lInt=null;}
+  document.getElementById('loadingMessage').textContent='✓ Done.';
+  setTimeout(()=>document.getElementById('loadingOverlay').classList.add('hidden'),400);
+}
+
+// Fidelity
+function calcFid(ideal,noisy){let f=0;for(const s in ideal)f+=Math.sqrt((ideal[s]||0)*((noisy&&noisy[s])||0));return f;}
+
+// Run simulation
+document.getElementById('runBtn').addEventListener('click',async()=>{
+  const noise=document.getElementById('noiseToggle').checked;
+  const inspect=document.getElementById('inspectToggle').checked;
+  const persistent=document.getElementById('persistToggle').checked;
+  const gates=gateList.slice().sort((a,b)=>a.t-b.t||a.qubits[0]-b.qubits[0]);
+  for(let q=0;q<N_QUBITS;q++) gates.push({name:'M',qubits:[q],t:N_STEPS-1});
+  const body={num_qubits:N_QUBITS,shots:64,noise_enabled:noise,persistent_mode:persistent,show_phi:inspect,gates};
+  showLoading();
+  try{
+    const resp=await fetch(`${API}/simulate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const res=await resp.json();
+    histData={ideal:res.histogram_ideal,noisy:res.histogram_noisy||{}};
+    drawHistogram();
+    if(qsOk) updateQSphere(res.bloch_states.map(s=>({theta:s.theta,phi:s.phi,probability:s.probability,label:s.state})));
+    const m=res.metadata,ti=m.timing,ca=m.cache_stats||{},lru=ca.lru_cache||{hits:0,misses:0,hit_rate:0,current_size:0,max_size:0};
+    const fid=noise&&histData.noisy?calcFid(histData.ideal,histData.noisy):null;
+    document.getElementById('metaBox').value=[
+      'CIRCUIT',`  Qubits    ${N_QUBITS}`,`  Depth     ${m.circuit_depth}`,`  Gates     ${m.circuit_size}`,`  Shots     ${m.shots}`,'',
+      'TIMING',`  Total        ${ti.total_seconds.toFixed(4)}s`,`  Ideal sim    ${ti.ideal_simulation_seconds.toFixed(4)}s`,
+      `  Noisy sim    ${ti.noisy_simulation_seconds.toFixed(4)}s`,`  φ-extract    ${ti.phi_extraction_seconds.toFixed(4)}s`,'',
+      'BACKEND',`  Device    ${m.device.toUpperCase()}`,`  Noise     ${m.noise_enabled?'ON  (φ-manifold)':'OFF'}`,`  Cache     ${m.persistent_mode?'ON':'OFF'}`,'',
+      'CACHE',`  Fixed     ${ca.fixed_cache_size||0} gates`,`  LRU hits  ${lru.hits}  (${(lru.hit_rate*100).toFixed(1)}%)`,`  LRU size  ${lru.current_size}/${lru.max_size}`,'',
+      'RESULTS',`  Amplitudes    ${res.statevector.length}`,`  Bloch states  ${res.bloch_states.length}`,
+      `  φ-manifold    ${res.phi_manifold?res.phi_manifold.length+'×'+res.phi_manifold[0].length:'N/A'}`,
+      fid!==null?'':null, fid!==null?'FIDELITY (Bhattacharyya)':null, fid!==null?`  Ideal vs Noisy  ${fid.toFixed(4)}`:null,
+    ].filter(l=>l!==null).join('\n');
+    window.lastPhi=res.phi_manifold;
+    drawCircuit(); hideLoading();
+  }catch(err){
+    hideLoading();
+    setTimeout(()=>alert(`Simulation error: ${err.message}\n\nStart backend:\n  uvicorn entry:app --reload --port 8888`),500);
+    document.getElementById('metaBox').value=`ERROR: ${err.message}\n\nStart backend:\n  uvicorn entry:app --reload --port 8888`;
+  }
+});
+
+drawCircuit();
+
+// ════════════════════════════════════════════════════════════
+// COMPARE VS AER
+// ════════════════════════════════════════════════════════════
+const PRESETS = {
+  bell:{num_qubits:2,gates:[{name:'H',qubits:[0],t:0},{name:'CNOT',qubits:[0,1],t:1}]},
+  ghz3:{num_qubits:3,gates:[{name:'H',qubits:[0],t:0},{name:'CNOT',qubits:[0,1],t:1},{name:'CNOT',qubits:[1,2],t:2}]},
+  ghz4:{num_qubits:4,gates:[{name:'H',qubits:[0],t:0},{name:'CNOT',qubits:[0,1],t:1},{name:'CNOT',qubits:[1,2],t:2},{name:'CNOT',qubits:[2,3],t:3}]},
+  qft3:{num_qubits:3,gates:[{name:'H',qubits:[0],t:0},{name:'CRZ',qubits:[1,0],params:[1.5708],t:1},{name:'CRZ',qubits:[2,0],params:[0.7854],t:2},{name:'H',qubits:[1],t:3},{name:'CRZ',qubits:[2,1],params:[1.5708],t:4},{name:'H',qubits:[2],t:5}]},
+  teleport:{num_qubits:3,gates:[{name:'H',qubits:[0],t:0},{name:'CNOT',qubits:[0,1],t:1},{name:'CNOT',qubits:[2,0],t:2},{name:'H',qubits:[2],t:3},{name:'CNOT',qubits:[1,2],t:4},{name:'CZ',qubits:[0,2],t:5}]},
+  random5:{num_qubits:5,gates:[{name:'H',qubits:[0],t:0},{name:'H',qubits:[2],t:0},{name:'H',qubits:[4],t:0},{name:'CNOT',qubits:[0,1],t:1},{name:'CNOT',qubits:[2,3],t:1},{name:'RY',qubits:[4],params:[1.047],t:2},{name:'CZ',qubits:[1,2],t:3},{name:'RX',qubits:[0],params:[0.785],t:4},{name:'CNOT',qubits:[3,4],t:4},{name:'H',qubits:[1],t:5},{name:'CNOT',qubits:[0,2],t:6}]}
+};
+let currentPreset=null, chartQTX=null, chartAer=null, chartOvl=null;
+
+document.querySelectorAll('.pbtn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.pbtn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); currentPreset=b.dataset.preset;
+  });
+});
+document.querySelector('[data-preset="bell"]').click();
+
+document.getElementById('noiseLevel').addEventListener('input',e=>{
+  document.getElementById('nlVal').textContent=parseFloat(e.target.value).toFixed(2);
+});
+
+async function runComparison(){
+  const preset=PRESETS[currentPreset]; if(!preset){showCmpErr('Select a preset first.');return;}
+  const shots=parseInt(document.getElementById('cmpShots').value);
+  const noiseLevel=parseFloat(document.getElementById('noiseLevel').value);
+  const btn=document.getElementById('cmpRunBtn');
+  btn.disabled=true; btn.textContent='Running...';
+  hideCmpErr(); hideResults();
+  showLoading('Running QtorchX + Qiskit Aer...');
+  try{
+    const resp=await fetch(`${API}/compare`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({num_qubits:preset.num_qubits,shots,noise_level:noiseLevel,gates:preset.gates})
+    });
+    if(!resp.ok) throw new Error(`HTTP ${resp.status}: ${await resp.text()}`);
+    const data=await resp.json();
+    renderCmpResults(data,preset);
+    hideLoading();
+  }catch(err){
+    hideLoading(); showCmpErr(err.message);
+  }finally{
+    btn.disabled=false; btn.textContent='▶ \u00a0Run Comparison';
+  }
+}
+
+function renderCmpResults(data){
+  const qtx=data.results?.qtorchx||{}, aer=data.results?.qiskit_aer||{}, met=data.metrics||{};
+  document.getElementById('mFidelity').textContent=met.fidelity_between_engines!=null?(met.fidelity_between_engines*100).toFixed(2)+'%':'—';
+  document.getElementById('mTVD').textContent=met.tvd_between_engines!=null?met.tvd_between_engines.toFixed(4):'—';
+  document.getElementById('mQtxTime').textContent=qtx.time_seconds!=null?qtx.time_seconds+'s':'—';
+  document.getElementById('mAerTime').textContent=aer.time_seconds!=null?aer.time_seconds+'s':'—';
+  document.getElementById('mShots').textContent=data.shots?.toLocaleString()||'—';
+
+  const badge=document.getElementById('agBadge');
+  const fp=met.fidelity_between_engines!=null?met.fidelity_between_engines*100:null;
+  if(fp!==null){
+    badge.style.display=''; badge.className='abadge';
+    if(fp>=95){badge.classList.add('ab-hi');badge.textContent='⬡ HIGH AGREEMENT';}
+    else if(fp>=80){badge.classList.add('ab-mod');badge.textContent='◈ MODERATE AGREEMENT';}
+    else{badge.classList.add('ab-div');badge.textContent='◆ DIVERGENT';}
+  }
+
+  if(qtx.noise_model) document.getElementById('qtxNoiseSub').textContent=qtx.noise_model;
+  if(aer.noise_model) document.getElementById('aerNoiseSub').textContent=aer.noise_model;
+  if(qtx.time_seconds) document.getElementById('qtxTiming').textContent=`⏱ ${qtx.time_seconds}s`;
+  if(aer.time_seconds) document.getElementById('aerTiming').textContent=`⏱ ${aer.time_seconds}s`;
+
+  const allStates=[...new Set([...Object.keys(qtx.ideal_probs||{}),...Object.keys(qtx.noisy_probs||{}),...Object.keys(aer.ideal_probs||{}),...Object.keys(aer.noisy_probs||{})])].sort();
+  const sig=allStates.filter(s=>Math.max((qtx.ideal_probs||{})[s]||0,(qtx.noisy_probs||{})[s]||0,(aer.ideal_probs||{})[s]||0,(aer.noisy_probs||{})[s]||0)>0.005);
+  const labels=sig.map(s=>'|'+s+'⟩');
+
+  if(chartQTX){chartQTX.destroy();chartQTX=null;}
+  if(chartAer){chartAer.destroy();chartAer=null;}
+  if(chartOvl){chartOvl.destroy();chartOvl=null;}
+
+  chartQTX=mkEngChart('qtxChart',labels,sig,qtx.ideal_probs||{},qtx.noisy_probs||{},'rgba(52,152,219,0.3)','#3498db');
+  chartAer=mkEngChart('aerChart',labels,sig,aer.ideal_probs||{},aer.noisy_probs||{},'rgba(155,89,182,0.3)','#9b59b6');
+  chartOvl=mkOvlChart(labels,sig,qtx.ideal_probs||{},qtx.noisy_probs||{},aer.noisy_probs||{});
+
+  renderTable(sig,qtx.ideal_probs||{},qtx.noisy_probs||{},aer.noisy_probs||{});
+
+  const r=document.getElementById('cmpResults');
+  r.classList.remove('hidden'); r.style.display='flex';
+}
+
+const CHART_OPTS={responsive:true,maintainAspectRatio:true,plugins:{legend:{labels:{color:'rgba(255,255,255,0.55)',font:{family:"'IBM Plex Mono'",size:10}}},tooltip:{callbacks:{label:c=>` ${(c.raw*100).toFixed(2)}%`}}},scales:{x:{ticks:{color:'rgba(255,255,255,0.35)',font:{size:9}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'rgba(255,255,255,0.35)',callback:v=>(v*100).toFixed(1)+'%'},grid:{color:'rgba(255,255,255,0.04)'},min:0}}};
+
+function mkEngChart(id,labels,states,idealMap,noisyMap,fill,line){
+  const cv=document.getElementById(id); if(!cv) return null;
+  return new Chart(cv.getContext('2d'),{type:'bar',data:{labels,datasets:[
+    {label:'Ideal',data:states.map(s=>idealMap[s]||0),backgroundColor:'rgba(243,156,18,0.15)',borderColor:'#f39c12',borderWidth:1.5,borderRadius:2},
+    {label:'Noisy',data:states.map(s=>noisyMap[s]||0),backgroundColor:fill,borderColor:line,borderWidth:2,borderRadius:2}
+  ]},options:CHART_OPTS});
+}
+function mkOvlChart(labels,states,idealMap,qtxMap,aerMap){
+  const cv=document.getElementById('overlayChart'); if(!cv) return null;
+  return new Chart(cv.getContext('2d'),{type:'bar',data:{labels,datasets:[
+    {label:'Ideal',data:states.map(s=>idealMap[s]||0),backgroundColor:'rgba(243,156,18,0.18)',borderColor:'#f39c12',borderWidth:1,borderRadius:2},
+    {label:'QtorchX noisy',data:states.map(s=>qtxMap[s]||0),backgroundColor:'rgba(52,152,219,0.35)',borderColor:'#3498db',borderWidth:2,borderRadius:2},
+    {label:'Qiskit Aer noisy',data:states.map(s=>aerMap[s]||0),backgroundColor:'rgba(155,89,182,0.35)',borderColor:'#9b59b6',borderWidth:2,borderRadius:2}
+  ]},options:CHART_OPTS});
+}
+
+function renderTable(states,idealMap,qtxMap,aerMap){
+  const tbody=document.getElementById('tableBody'); tbody.innerHTML='';
+  const sorted=[...states].sort((a,b)=>(idealMap[b]||0)-(idealMap[a]||0));
+  const maxP=Math.max(...sorted.map(s=>Math.max(idealMap[s]||0,qtxMap[s]||0,aerMap[s]||0)));
+  sorted.forEach(s=>{
+    const id=idealMap[s]||0, qt=qtxMap[s]||0, ae=aerMap[s]||0, tvd=0.5*Math.abs(qt-ae);
+    const bw=v=>Math.max(2,(v/maxP)*100)+'px', pct=v=>(v*100).toFixed(2)+'%';
+    tbody.insertAdjacentHTML('beforeend',`<tr>
+      <td style="color:#e8ecf5;font-weight:600">|${s}⟩</td>
+      <td>${pct(id)}</td>
+      <td><div class="bc"><div class="mb" style="width:${bw(qt)};background:#3498db"></div>${pct(qt)}</div></td><td></td>
+      <td><div class="bc"><div class="mb" style="width:${bw(ae)};background:#9b59b6"></div>${pct(ae)}</div></td><td></td>
+      <td style="color:${tvd>0.02?'#e74c3c':'rgba(255,255,255,0.38)'}">${tvd.toFixed(4)}</td>
+    </tr>`);
+  });
+}
+function showCmpErr(msg){const e=document.getElementById('cmpErr');e.textContent='⚠ '+msg;e.style.display='block';}
+function hideCmpErr(){document.getElementById('cmpErr').style.display='none';}
+function hideResults(){const r=document.getElementById('cmpResults');r.classList.add('hidden');r.style.display='';}
+
+// ════════════════════════════════════════════════════════════
+// VQE DEMO  (client-side animation, 25 scenarios)
+// ════════════════════════════════════════════════════════════
+const GSE=-1.137283834;
+const PARAM_PROFILES=[
+  {name:"Fast Learner",idealStart:[0.5,2.1,1.3,0.8,2.9,1.7,0.4,2.5,1.1,0.9,2.3,1.5,0.7,2.0,1.4],idealTarget:[1.23,0.87,2.45,0.65,2.78,1.92,0.34,2.56,1.08,0.98,2.21,1.67,0.54,1.89,1.52],noisyTarget:[1.19,0.92,2.50,0.71,2.81,1.89,0.39,2.61,1.14,1.03,2.18,1.71,0.58,1.93,1.48],idealLR:0.18,noisyLR:0.08},
+  {name:"Slow Starter",idealStart:[0.2,2.5,0.8,1.5,3.0,1.2,0.3,2.8,0.7,1.3,2.7,1.1,0.9,2.2,1.0],idealTarget:[1.25,0.85,2.48,0.63,2.82,1.94,0.32,2.59,1.05,1.00,2.19,1.69,0.52,1.87,1.54],noisyTarget:[1.21,0.90,2.53,0.69,2.87,1.90,0.38,2.65,1.11,1.06,2.14,1.75,0.57,1.92,1.50],idealLR:0.12,noisyLR:0.05},
+  {name:"Balanced",idealStart:[0.6,2.0,1.4,0.9,2.8,1.6,0.5,2.6,1.2,1.0,2.4,1.4,0.7,2.1,1.5],idealTarget:[1.22,0.88,2.44,0.66,2.75,1.91,0.35,2.55,1.09,0.97,2.23,1.66,0.55,1.90,1.51],noisyTarget:[1.18,0.93,2.49,0.72,2.80,1.87,0.41,2.60,1.15,1.03,2.18,1.72,0.60,1.95,1.47],idealLR:0.15,noisyLR:0.07},
+  {name:"Near Optimal",idealStart:[1.0,1.2,2.2,0.7,2.5,1.8,0.5,2.4,1.0,0.9,2.4,1.6,0.6,1.9,1.5],idealTarget:[1.21,0.89,2.42,0.68,2.72,1.90,0.37,2.54,1.11,0.96,2.25,1.64,0.57,1.91,1.50],noisyTarget:[1.17,0.94,2.48,0.74,2.77,1.86,0.43,2.60,1.17,1.02,2.20,1.70,0.62,1.96,1.46],idealLR:0.20,noisyLR:0.10},
+  {name:"Far from Target",idealStart:[0.1,2.8,0.5,1.8,3.1,0.9,0.2,2.9,0.6,1.5,2.9,0.8,1.0,2.3,0.9],idealTarget:[1.24,0.86,2.46,0.64,2.79,1.93,0.33,2.57,1.07,0.99,2.22,1.68,0.53,1.88,1.53],noisyTarget:[1.20,0.91,2.51,0.70,2.84,1.88,0.40,2.63,1.13,1.05,2.17,1.74,0.59,1.94,1.49],idealLR:0.14,noisyLR:0.06}
+];
+const PATTERNS=[
+  {name:"Smooth Exponential",iIter:40,nIter:50,iCurve:(i)=>GSE+0.35*Math.exp(-i/7)-0.001,nCurve:(i,n)=>GSE+0.35*Math.exp(-i/9)+0.005+(Math.random()-0.5)*0.008*(1-i/n)},
+  {name:"Jagged with Spikes",iIter:50,nIter:60,iCurve:(i)=>GSE+0.4*Math.exp(-i/8)-0.002,nCurve:(i,n)=>{const b=GSE+0.4*Math.exp(-i/10)+0.006+(Math.random()-0.5)*0.015*(1-i/n);const sp=(i>20&&i<45&&Math.random()>0.92)?(Math.random()-0.5)*0.3:0;return b+sp;}},
+  {name:"Plateau Midway",iIter:35,nIter:48,iCurve:(i)=>{if(i<15)return GSE+0.3*Math.exp(-i/5);if(i<25)return GSE+0.05;return GSE+0.05*Math.exp(-(i-25)/4)-0.001;},nCurve:(i,n)=>{const ns=(Math.random()-0.5)*0.01*(1-i/n);if(i<20)return GSE+0.3*Math.exp(-i/7)+0.007+ns;if(i<35)return GSE+0.08+ns*2;return GSE+0.08*Math.exp(-(i-35)/5)+0.002+ns;}},
+  {name:"Oscillating Descent",iIter:45,nIter:55,iCurve:(i)=>GSE+0.35*Math.exp(-i/8)-0.001+0.02*Math.sin(i/3)*Math.exp(-i/20),nCurve:(i,n)=>GSE+0.35*Math.exp(-i/10)+0.006+0.04*Math.sin(i/2.5)*Math.exp(-i/15)+(Math.random()-0.5)*0.012*(1-i/n)},
+  {name:"Step-wise Drops",iIter:42,nIter:52,iCurve:(i)=>{const steps=[{e:10,v:-0.9},{e:20,v:-1.05},{e:30,v:-1.12},{e:42,v:-1.135}];for(const s of steps)if(i<=s.e)return s.v+(Math.random()-0.5)*0.005;return GSE-0.002;},nCurve:(i)=>{const steps=[{e:15,v:-0.85},{e:28,v:-1.02},{e:40,v:-1.10},{e:52,v:-1.130}];for(const s of steps)if(i<=s.e)return s.v+(Math.random()-0.5)*0.015;return GSE+0.003;}}
+];
+
+let curProf=null, curPat=null, animData=null;
+function loadRandom(){
+  const pi=Math.floor(Math.random()*PARAM_PROFILES.length);
+  const pai=Math.floor(Math.random()*PATTERNS.length);
+  curProf=PARAM_PROFILES[pi]; curPat=PATTERNS[pai];
+  const iF=[], nF=[];
+  let ip=[...curProf.idealStart], np=[...curProf.idealStart];
+  for(let i=0;i<=curPat.iIter;i++){
+    ip=ip.map((p,idx)=>p+(curProf.idealTarget[idx]-p)*curProf.idealLR);
+    iF.push({iteration:i,params:[...ip],energy:curPat.iCurve(i,curPat.iIter)});
+  }
+  for(let i=0;i<=curPat.nIter;i++){
+    np=np.map((p,idx)=>p+(curProf.noisyTarget[idx]-p)*curProf.noisyLR+(Math.random()-0.5)*0.1*(1-i/curPat.nIter));
+    nF.push({iteration:i,params:[...np],energy:curPat.nCurve(i,curPat.nIter)});
+  }
+  animData={ideal:iF,noisy:nF};
+  return animData;
+}
+loadRandom();
+
+class CircuitDraw {
+  constructor(svgId,isNoisy){
+    this.svg=document.getElementById(svgId); this.isNoisy=isNoisy;
+    this.w=820; this.h=155;
+    this.svg.setAttribute('viewBox',`0 0 ${this.w} ${this.h}`);
+    this.svg.setAttribute('width','100%'); this.svg.setAttribute('height','100%');
+    this.drawBase();
+  }
+  ns(tag){return document.createElementNS('http://www.w3.org/2000/svg',tag);}
+  mk(tag,attrs){const el=this.ns(tag);Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));return el;}
+  drawBase(){
+    const color=this.isNoisy?'#9b59b6':'#3498db';
+    const qY=[42,90,138]; const startX=55;
+    qY.forEach((y,q)=>{
+      this.svg.appendChild(this.mk('line',{x1:20,y1:y,x2:this.w-10,y2:y,stroke:color,'stroke-width':2,opacity:0.3}));
+      const t=this.ns('text'); t.setAttribute('x',14); t.setAttribute('y',y+5);
+      t.setAttribute('fill','rgba(255,255,255,0.55)'); t.setAttribute('font-size','14');
+      t.setAttribute('font-weight','bold'); t.textContent=`q${q}`; this.svg.appendChild(t);
+    });
+    let x=startX; let pidx=0;
+    for(let layer=0;layer<5;layer++){
+      for(let q=0;q<3;q++){ this.drawRY(x,qY[q],pidx,color); pidx++; }
+      x+=78;
+      if(layer<4){ this.drawCNOT(x,qY[0],qY[1],color); x+=42; this.drawCNOT(x,qY[1],qY[2],color); x+=42; }
+    }
+  }
+  drawRY(x,y,pidx,color){
+    const g=this.ns('g'); g.setAttribute('id',(this.isNoisy?'n':'i')+'-g-'+pidx);
+    g.appendChild(this.mk('rect',{x:x-24,y:y-16,width:48,height:32,fill:'rgba(255,255,255,0.04)',stroke:color,'stroke-width':2,rx:3}));
+    const vt=this.ns('text'); vt.setAttribute('x',x); vt.setAttribute('y',y+5);
+    vt.setAttribute('text-anchor','middle'); vt.setAttribute('fill',color);
+    vt.setAttribute('font-size','13'); vt.setAttribute('font-weight','bold');
+    vt.setAttribute('id',(this.isNoisy?'n':'i')+'-v-'+pidx); vt.textContent='0.000';
+    g.appendChild(vt); this.svg.appendChild(g);
+  }
+  drawCNOT(x,cy,ty,color){
+    this.svg.appendChild(this.mk('circle',{cx:x,cy,r:5,fill:color}));
+    this.svg.appendChild(this.mk('line',{x1:x,y1:cy,x2:x,y2:ty,stroke:color,'stroke-width':2}));
+    this.svg.appendChild(this.mk('circle',{cx:x,cy:ty,r:12,fill:'none',stroke:color,'stroke-width':2}));
+    ['x1','y1','x2','y2'].forEach(()=>{});
+    const dx=8; const lines=[[x-dx,ty-dx,x+dx,ty+dx],[x+dx,ty-dx,x-dx,ty+dx]];
+    lines.forEach(([x1,y1,x2,y2])=>this.svg.appendChild(this.mk('line',{x1,y1,x2,y2,stroke:color,'stroke-width':2})));
+  }
+  update(params){
+    params.forEach((v,i)=>{
+      const el=document.getElementById((this.isNoisy?'n':'i')+'-v-'+i);
+      if(!el) return; el.textContent=v.toFixed(3);
+      const g=document.getElementById((this.isNoisy?'n':'i')+'-g-'+i);
+      if(g){
+        const r=g.querySelector('rect');
+        if(r){r.setAttribute('fill',`rgba(${this.isNoisy?'155,89,182':'52,152,219'},0.15)`);setTimeout(()=>r.setAttribute('fill','rgba(255,255,255,0.04)'),250);}
+      }
+    });
+  }
+}
+
+let vqeChart=null, vCtrl=null;
+function initVQEChart(){
+  const cv=document.getElementById('comparison-chart'); if(!cv) return;
+  vqeChart=new Chart(cv.getContext('2d'),{
+    type:'line',
+    data:{labels:[],datasets:[
+      {label:'Ideal VQE',data:[],borderColor:'#3498db',backgroundColor:'rgba(52,152,219,0.1)',borderWidth:2.5,tension:0.3,pointRadius:2,fill:true},
+      {label:'Noisy VQE',data:[],borderColor:'#9b59b6',backgroundColor:'rgba(155,89,182,0.1)',borderWidth:2.5,tension:0.2,pointRadius:2,fill:true}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,animation:{duration:200},
+      scales:{
+        x:{title:{display:true,text:'Iteration',color:'rgba(255,255,255,0.6)',font:{size:11}},grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'rgba(255,255,255,0.45)'}},
+        y:{min:-1.5,max:-0.8,title:{display:true,text:'Energy (Ha)',color:'rgba(255,255,255,0.6)',font:{size:11}},grid:{color:'rgba(255,255,255,0.08)'},ticks:{color:'rgba(255,255,255,0.45)',callback:v=>v.toFixed(3)}}
+      },
+      plugins:{
+        legend:{labels:{color:'rgba(255,255,255,0.65)',font:{size:11},padding:12,usePointStyle:true}},
+        tooltip:{callbacks:{label:c=>[`${c.dataset.label}: ${c.parsed.y.toFixed(6)} Ha`,`Error: ${Math.abs(c.parsed.y-GSE).toFixed(6)} Ha`]}}
+      }
+    }
+  });
+  Chart.register({id:'gsLine',afterDatasetsDraw:chart=>{
+    const cx=chart.ctx, ys=chart.scales.y, xs=chart.scales.x;
+    const yp=ys.getPixelForValue(GSE);
+    cx.save(); cx.strokeStyle='rgba(255,255,255,0.4)'; cx.lineWidth=1.5; cx.setLineDash([5,5]);
+    cx.beginPath(); cx.moveTo(xs.left,yp); cx.lineTo(xs.right,yp); cx.stroke();
+    cx.fillStyle='rgba(255,255,255,0.4)'; cx.font='10px monospace';
+    cx.fillText('Ground State',xs.right-88,yp-4); cx.restore(); cx.setLineDash([]);
+  }});
+}
+
+class VQECtrl {
+  constructor(){
+    this.running=false; this.iF=0; this.nF=0; this.speed=130;
+    this.iCirc=new CircuitDraw('ideal-circuit-svg',false);
+    this.nCirc=new CircuitDraw('noisy-circuit-svg',true);
+    this.iCirc.update(animData.ideal[0].params);
+    this.nCirc.update(animData.noisy[0].params);
+  }
+  async start(){
+    if(this.running) return;
+    loadRandom();
+    this.running=true; this.iF=0; this.nF=0;
+    this.iCirc=new CircuitDraw('ideal-circuit-svg',false);
+    this.nCirc=new CircuitDraw('noisy-circuit-svg',true);
+    setSt('ideal-circuit-status','running','Optimizing...');
+    setSt('noisy-circuit-status','running','Optimizing...');
+    document.getElementById('graph-status').textContent=`${curProf.name} · ${curPat.name}`;
+    document.getElementById('metrics-card').classList.add('hidden');
+    document.getElementById('run-comparison-btn').disabled=true;
+    vqeChart.data.labels=[]; vqeChart.data.datasets[0].data=[]; vqeChart.data.datasets[1].data=[];
+    vqeChart.update('none');
+    await this.loop();
+  }
+  async loop(){
+    while(this.running){
+      const iDone=this.iF>=animData.ideal.length, nDone=this.nF>=animData.noisy.length;
+      if(iDone&&nDone){this.complete();break;}
+      if(!iDone){
+        const f=animData.ideal[this.iF]; this.iCirc.update(f.params);
+        vqeChart.data.datasets[0].data.push(f.energy);
+        if(!nDone||this.nF===0) vqeChart.data.labels.push(f.iteration);
+        this.iF++;
+        if(this.iF>=animData.ideal.length) setSt('ideal-circuit-status','converged','Converged');
+      }
+      if(!nDone){
+        const f=animData.noisy[this.nF]; this.nCirc.update(f.params);
+        vqeChart.data.datasets[1].data.push(f.energy);
+        this.nF++;
+        if(this.nF>=animData.noisy.length) setSt('noisy-circuit-status','converged','Converged');
+      }
+      vqeChart.update('active');
+      await new Promise(r=>setTimeout(r,this.speed));
+    }
+  }
+  complete(){
+    this.running=false;
+    document.getElementById('graph-status').textContent=`${curProf.name} · ${curPat.name} — Complete!`;
+    document.getElementById('run-comparison-btn').disabled=false;
+    const iF=animData.ideal[animData.ideal.length-1], nF=animData.noisy[animData.noisy.length-1];
+    const ii=animData.ideal.length-1, ni=animData.noisy.length-1;
+    set('ideal-iters',ii); set('noisy-iters',ni);
+    set('iter-diff',`+${ni-ii} (+${Math.round((ni-ii)/ii*100)}%)`);
+    set('ideal-energy',iF.energy.toFixed(6)+' Ha'); set('noisy-energy',nF.energy.toFixed(6)+' Ha');
+    set('energy-diff',Math.abs(nF.energy-iF.energy).toFixed(6)+' Ha');
+    document.getElementById('metrics-card').classList.remove('hidden');
+  }
+  reset(){
+    this.running=false; this.iF=0; this.nF=0;
+    setSt('ideal-circuit-status','ready','Ready'); setSt('noisy-circuit-status','ready','Ready');
+    document.getElementById('graph-status').textContent='Click Run to start...';
+    document.getElementById('metrics-card').classList.add('hidden');
+    document.getElementById('run-comparison-btn').disabled=false;
+    this.iCirc.update(animData.ideal[0].params); this.nCirc.update(animData.noisy[0].params);
+    vqeChart.data.labels=[]; vqeChart.data.datasets[0].data=[]; vqeChart.data.datasets[1].data=[];
+    vqeChart.update('none');
+  }
+}
+function setSt(id,cls,txt){const el=document.getElementById(id);el.className='cstatus '+cls;el.textContent=txt;}
+function set(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
+
+window.addEventListener('load',()=>{
+  initVQEChart();
+  vCtrl=new VQECtrl();
+  document.getElementById('run-comparison-btn').addEventListener('click',()=>vCtrl.start());
+  document.getElementById('reset-demo-btn').addEventListener('click',()=>vCtrl.reset());
+});
+</script>
+</body>
+</html>

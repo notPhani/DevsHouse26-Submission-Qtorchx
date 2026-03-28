@@ -28,7 +28,12 @@
             z-index: 1; pointer-events: none;
             mix-blend-mode: difference;
         }
- 
+        #bg-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 2; pointer-events: none;
+        }
+
         /* ── NAVBAR ── */
         .nav-container {
             position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
@@ -121,7 +126,7 @@
         .s2-kicker {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.67rem; letter-spacing: 0.18em;
-            text-transform: uppercase; color: #444;
+            text-transform: uppercase; color: #777;
             margin-bottom: 7px; text-align: center;
             flex-shrink: 0;
         }
@@ -138,12 +143,12 @@
         }
         .s2-sub {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.73rem; color: #555;
+            font-size: 0.73rem; color: #999;
             max-width: 500px; line-height: 1.6;
             text-align: center; margin-bottom: 10px;
             flex-shrink: 0;
         }
-        .s2-sub strong { color: #888; }
+        .s2-sub strong { color: #ccc; }
  
         .s2-divider {
             width: 1px; height: 16px;
@@ -212,13 +217,13 @@
  
         /* Description: grows to push vis to bottom, clips rather than overflows card */
         .card-desc {
-            font-size: 0.79rem; color: #666; line-height: 1.65;
+            font-size: 0.79rem; color: #999; line-height: 1.65;
             margin-bottom: 12px;
             flex: 1;
             min-height: 0;
             overflow: hidden;
         }
-        .card-desc strong { color: #999; font-weight: 600; }
+        .card-desc strong { color: #ccc; font-weight: 600; }
  
         /* Vis stage: always 108px, never grows */
         .vis-stage {
@@ -306,15 +311,154 @@
         .stat-label {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.58rem; letter-spacing: 0.1em;
-            color: #363636; text-transform: uppercase;
+            color: #777; text-transform: uppercase;
         }
         .stat-value {
             font-size: 0.95rem; font-weight: 800; letter-spacing: -0.03em;
             background: linear-gradient(90deg,#fff 0%,#3498db 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-        .stat-note { font-size: 0.68rem; color: #424242; line-height: 1.45; }
+        .stat-note { font-size: 0.68rem; color: #888; line-height: 1.45; }
  
+        /* ── S3 / S4 SHARED INNER ── */
+        .s3-inner, .s4-inner {
+            width: 100%; height: 100%; max-width: 1100px;
+            padding: 82px 32px 18px;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 0; z-index: 2;
+        }
+
+        /* ── S3: CHANNEL GRID ── */
+        .channel-grid {
+            display: grid; grid-template-columns: repeat(3,1fr);
+            gap: 8px; width: 100%; flex: 1; min-height: 0; align-items: stretch;
+        }
+        .ch-card {
+            border-radius: 12px; padding: 14px 16px;
+            display: flex; flex-direction: column;
+            position: relative; overflow: hidden; min-height: 0;
+            background: rgba(10,10,13,0.75); transition: border-color 0.35s;
+        }
+        .ch-card::before {
+            content: ''; position: absolute;
+            top: 0; left: 10%; right: 10%; height: 1px;
+        }
+        .ch-0 { border: 1px solid rgba(52,152,219,0.18); }
+        .ch-0::before { background: linear-gradient(90deg,transparent,rgba(52,152,219,0.5),transparent); }
+        .ch-0:hover { border-color: rgba(52,152,219,0.4); }
+        .ch-1 { border: 1px solid rgba(52,152,219,0.1); }
+        .ch-1::before { background: linear-gradient(90deg,transparent,rgba(52,152,219,0.25),transparent); }
+        .ch-1:hover { border-color: rgba(52,152,219,0.28); }
+        .ch-2 { border: 1px solid rgba(231,76,60,0.15); }
+        .ch-2::before { background: linear-gradient(90deg,transparent,rgba(231,76,60,0.4),transparent); }
+        .ch-2:hover { border-color: rgba(231,76,60,0.38); }
+        .ch-3 { border: 1px solid rgba(155,89,182,0.15); }
+        .ch-3::before { background: linear-gradient(90deg,transparent,rgba(155,89,182,0.4),transparent); }
+        .ch-3:hover { border-color: rgba(155,89,182,0.38); }
+        .ch-4 { border: 1px solid rgba(46,204,113,0.12); }
+        .ch-4::before { background: linear-gradient(90deg,transparent,rgba(46,204,113,0.35),transparent); }
+        .ch-4:hover { border-color: rgba(46,204,113,0.32); }
+        .ch-5 { border: 1px solid rgba(255,255,255,0.07); }
+        .ch-5::before { background: linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent); }
+        .ch-5:hover { border-color: rgba(255,255,255,0.14); }
+
+        .ch-idx {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.58rem; letter-spacing: 0.1em;
+            text-transform: uppercase; margin-bottom: 4px; flex-shrink: 0;
+        }
+        .ch-name {
+            font-size: 1.0rem; font-weight: 700;
+            letter-spacing: -0.03em; line-height: 1.1;
+            margin-bottom: 5px; flex-shrink: 0;
+        }
+        .ch-eq {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem; color: #777; margin-bottom: 6px; flex-shrink: 0;
+        }
+        .ch-desc {
+            font-size: 0.72rem; color: #999; line-height: 1.6;
+            flex: 1; min-height: 0; overflow: hidden;
+        }
+        .ch-desc strong { color: #ccc; }
+
+        /* ── S4: DEPLOY SPLIT ── */
+        .deploy-split {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 10px; width: 100%; flex: 1; min-height: 0;
+        }
+        .deploy-card {
+            border-radius: 14px; padding: 18px 22px 16px;
+            display: flex; flex-direction: column;
+            position: relative; overflow: hidden; min-height: 0;
+            background: rgba(10,10,13,0.75);
+        }
+        .deploy-card::before {
+            content: ''; position: absolute;
+            top: 0; left: 10%; right: 10%; height: 1px;
+        }
+        .deploy-card-code { border: 1px solid rgba(52,152,219,0.15); }
+        .deploy-card-code::before { background: linear-gradient(90deg,transparent,rgba(52,152,219,0.5),transparent); }
+        .deploy-card-bench { border: 1px solid rgba(155,89,182,0.15); }
+        .deploy-card-bench::before { background: linear-gradient(90deg,transparent,rgba(155,89,182,0.45),transparent); }
+
+        .code-pre {
+            flex: 1; min-height: 0; overflow-y: auto;
+            background: rgba(0,0,0,0.55);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px; margin: 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem; line-height: 1.85;
+            padding: 12px 16px; color: #aaa;
+            scrollbar-width: thin; scrollbar-color: #222 transparent;
+        }
+        .c-kw  { color: #e74c3c; }
+        .c-fn  { color: #3498db; }
+        .c-str { color: #2ecc71; }
+        .c-cmt { color: #666; font-style: italic; }
+        .c-num { color: #9b59b6; }
+
+        .bench-table {
+            flex: 1; min-height: 0; overflow: hidden;
+            display: flex; flex-direction: column; gap: 0;
+        }
+        .bench-header, .bench-row {
+            display: grid;
+            grid-template-columns: 1.4fr 0.9fr 0.9fr 0.9fr;
+            padding: 6px 2px; align-items: center;
+        }
+        .bench-header { border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 2px; }
+        .bench-header span {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.56rem; color: #777;
+            letter-spacing: 0.08em; text-transform: uppercase;
+        }
+        .bench-row { border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .bench-row span { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #888; }
+        .bench-row .bcircuit { color: #888; font-weight: 700; }
+        .bench-row .bpass { color: #2ecc71; }
+        .bench-row .bfail { color: #e74c3c; }
+        .bench-row .tvdpass { color: #3498db; }
+        .bench-row .tvdfail { color: #e74c3c; }
+        .bench-note {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem; color: #666; margin-top: 6px; line-height: 1.6; flex-shrink: 0;
+        }
+        .bench-note strong { color: #999; }
+
+        .stat-card-cta {
+            background: rgba(52,152,219,0.06) !important;
+            border: 1px solid rgba(52,152,219,0.2) !important;
+            text-decoration: none; cursor: pointer;
+        }
+        .stat-card-cta:hover {
+            border-color: rgba(52,152,219,0.45) !important;
+            background: rgba(52,152,219,0.12) !important;
+        }
+        .stat-arrow {
+            font-size: 0.95rem; font-weight: 800; letter-spacing: -0.03em; color: #3498db;
+        }
+
         /* Keyframes */
         @keyframes spikeAnim {
             0%   { opacity:0; height:0; }
@@ -336,6 +480,7 @@
 
     <canvas id="smoke-canvas"></canvas>
     <canvas id="field-canvas"></canvas>
+    <div id="bg-overlay"></div>
 
     <div class="nav-container">
         <div class="brand">QTORCHX <span>QNaF</span></div>
@@ -343,6 +488,7 @@
             <a href="#formalism">Formalism</a>
             <a href="#engine">Engine</a>
             <a href="#deploy">Deploy</a>
+            <a href="playground.html" style="color:#3498db;">Playground →</a>
         </div>
     </div>
 
@@ -439,9 +585,194 @@
             </div>
         </section>
 
-        <!-- ══ SECTIONS 3 & 4 ══ -->
-        <section class="section" id="engine"><h2 class="inverse-text">Section 3: The Engine</h2></section>
-        <section class="section" id="deploy"><h2 class="inverse-text">Section 4: Deploy</h2></section>
+        <!-- ══ SECTION 3: ENGINE ══ -->
+        <section class="section" id="engine">
+            <div class="s3-inner">
+
+                <p class="s2-kicker">The 6-Channel Architecture / Section 03</p>
+                <h2 class="s2-title">
+                    <span class="dim">The Φ-Field</span>
+                    <span style="background:linear-gradient(90deg,#3498db,#9b59b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;"> Manifold.</span>
+                </h2>
+                <p class="s2-sub">
+                    QNaF decomposes decoherence into <strong>six coupled latent channels</strong>, each modeling a distinct physical interaction with the bath.
+                </p>
+
+                <div class="s2-divider"></div>
+
+                <div class="channel-grid">
+
+                    <div class="ch-card ch-0">
+                        <p class="ch-idx tag-blue">Φ₁ — Memory</p>
+                        <h3 class="ch-name"><span style="background:linear-gradient(110deg,#fff 0%,#3498db 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Bath<br>Memory</span></h3>
+                        <p class="ch-eq">M_i(t) = μ · Φᵢ(t−1)</p>
+                        <p class="ch-desc">Encodes <strong>non-Markovian persistence</strong>. The bath retains a decaying memory of past interactions, coupling each timestep to its own history.</p>
+                    </div>
+
+                    <div class="ch-card ch-1">
+                        <p class="ch-idx tag-blue">Φ₂ — Diffusion</p>
+                        <h3 class="ch-name"><span style="background:linear-gradient(110deg,#fff 0%,#3498db 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Spatial<br>Diffusion</span></h3>
+                        <p class="ch-eq">β Σⱼ K(i,j) Φⱼ(t)</p>
+                        <p class="ch-desc">Propagates field values across the <strong>circuit topology graph</strong>. Crosstalk between neighboring qubits flows through the Laplacian kernel K(i,j).</p>
+                    </div>
+
+                    <div class="ch-card ch-2">
+                        <p class="ch-idx tag-red">Φ₃ — Disturbance</p>
+                        <h3 class="ch-name"><span style="background:linear-gradient(110deg,#fff 0%,#e74c3c 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Gate<br>Bursts</span></h3>
+                        <p class="ch-eq">G_i(t) = γ · burst(gate)</p>
+                        <p class="ch-desc">Two-qubit gates inject <strong>burst perturbations</strong> scaled by entanglement cost: CNOT 2.5, SWAP 3.0, Toffoli 8.0. Single-qubit gates: 0.05–0.6.</p>
+                    </div>
+
+                    <div class="ch-card ch-3">
+                        <p class="ch-idx" style="color:#9b59b6;font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Φ₄ — Equilibrium</p>
+                        <h3 class="ch-name"><span style="background:linear-gradient(110deg,#fff 0%,#9b59b6 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Thermal<br>Bleed</span></h3>
+                        <p class="ch-eq">λ · (Φᵢ(eq) − Φᵢ(t))</p>
+                        <p class="ch-desc">Field channels decay toward a <strong>thermal equilibrium Φ(eq)</strong> set by hardware temperature, preventing unbounded field accumulation over long circuits.</p>
+                    </div>
+
+                    <div class="ch-card ch-4">
+                        <p class="ch-idx" style="color:#2ecc71;font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Φ₅ — Saturation</p>
+                        <h3 class="ch-name"><span style="background:linear-gradient(110deg,#fff 0%,#2ecc71 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Nonlinear<br>Saturation</span></h3>
+                        <p class="ch-eq">H(Φ) = ρ · tanh(Φ)</p>
+                        <p class="ch-desc">The <strong>tanh nonlinearity</strong> bounds field energy, preventing unphysical divergence. ρ controls the saturation threshold independently per channel.</p>
+                    </div>
+
+                    <div class="ch-card ch-5">
+                        <p class="ch-idx" style="color:#555;font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Φ₆ — Stochastic</p>
+                        <h3 class="ch-name"><span style="background:linear-gradient(110deg,#fff 0%,#888 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Stochastic<br>Kicks</span></h3>
+                        <p class="ch-eq">σᵢ(t) · ηᵢ(t) ~ 𝒩(0,1)</p>
+                        <p class="ch-desc">White-noise injections model <strong>quantum vacuum fluctuations</strong>. σᵢ is calibrated per-qubit from hardware noise characterization data.</p>
+                    </div>
+
+                </div><!-- /channel-grid -->
+
+                <div class="stat-row">
+                    <div class="stat-card">
+                        <p class="stat-label">Field Dimension</p>
+                        <p class="stat-value">ℝ⁶ per qubit</p>
+                        <p class="stat-note">6-channel latent vector at each node of the circuit spacetime graph.</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Update Rule</p>
+                        <p class="stat-value">tanh-gated SDE</p>
+                        <p class="stat-note">Φᵢ(t+1) = tanh[(α−λ)Φ + λΦ(eq) + βΣK + γG + μM + ρH + ση]</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Decoherence Map</p>
+                        <p class="stat-value">DPM: ℝ⁶→ℝ⁴</p>
+                        <p class="stat-note">W ∈ ℝ^{4×6} projects field to Pauli error probs via softmax(WΦ+b).</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ══ SECTION 4: DEPLOY ══ -->
+        <section class="section" id="deploy">
+            <div class="s4-inner">
+
+                <p class="s2-kicker">Benchmarks & Integration / Section 04</p>
+                <h2 class="s2-title">
+                    <span class="dim">From Field to</span>
+                    <span style="background:linear-gradient(90deg,#9b59b6,#3498db);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;"> Circuit.</span>
+                </h2>
+                <p class="s2-sub">
+                    Drop-in PyTorch API. Validated against <strong>Qiskit Aer</strong> on Bell, GHZ, and QFT benchmarks.
+                </p>
+
+                <div class="s2-divider"></div>
+
+                <div class="deploy-split">
+
+                    <!-- LEFT: Code -->
+                    <div class="deploy-card deploy-card-code">
+                        <p class="card-tag tag-blue" style="flex-shrink:0;margin-bottom:8px;">Python API</p>
+                        <pre class="code-pre"><span class="c-kw">from</span> qtorchx <span class="c-kw">import</span> QNaFSimulator
+<span class="c-kw">from</span> qtorchx.gates <span class="c-kw">import</span> GateLibrary
+
+<span class="c-cmt"># Initialise 4-qubit engine</span>
+sim = <span class="c-fn">QNaFSimulator</span>(
+    n_qubits=<span class="c-num">4</span>,
+    phi_dim=<span class="c-num">6</span>,        <span class="c-cmt"># Φ ∈ ℝ⁶</span>
+    noise=<span class="c-str">True</span>,
+    device=<span class="c-str">"cuda"</span>   <span class="c-cmt"># GPU-accelerated</span>
+)
+
+<span class="c-cmt"># Build Bell circuit</span>
+sim.<span class="c-fn">apply</span>(<span class="c-str">"H"</span>, qubit=<span class="c-num">0</span>)
+sim.<span class="c-fn">apply</span>(<span class="c-str">"CNOT"</span>, control=<span class="c-num">0</span>, target=<span class="c-num">1</span>)
+
+<span class="c-cmt"># Run — returns noisy statevector</span>
+result = sim.<span class="c-fn">run</span>(shots=<span class="c-num">8192</span>)
+
+<span class="c-cmt"># Inspect Φ-field state</span>
+phi = sim.<span class="c-fn">get_phi_state</span>()
+<span class="c-cmt"># phi.shape → [n_qubits, phi_dim]</span>
+
+err = sim.<span class="c-fn">get_pauli_errors</span>()
+<span class="c-cmt"># {'Z': 0.65, 'X': 0.22, 'Y': 0.13}</span></pre>
+                    </div>
+
+                    <!-- RIGHT: Benchmarks -->
+                    <div class="deploy-card deploy-card-bench">
+                        <p class="card-tag" style="color:#9b59b6;flex-shrink:0;margin-bottom:8px;font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;">Benchmark Results vs Qiskit Aer</p>
+                        <div class="bench-table">
+                            <div class="bench-header">
+                                <span>Circuit</span>
+                                <span>F(QNaF)</span>
+                                <span>F(Aer)</span>
+                                <span>TVD</span>
+                            </div>
+                            <div class="bench-row">
+                                <span class="bcircuit">Bell (2Q)</span>
+                                <span class="bpass">0.9980</span>
+                                <span>0.9941</span>
+                                <span class="tvdpass">0.0095 ✓</span>
+                            </div>
+                            <div class="bench-row">
+                                <span class="bcircuit">GHZ (3Q)</span>
+                                <span class="bpass">0.9974</span>
+                                <span>0.9867</span>
+                                <span class="tvdpass">0.0214 ✓</span>
+                            </div>
+                            <div class="bench-row">
+                                <span class="bcircuit">3Q-QFT</span>
+                                <span class="bpass">0.9999</span>
+                                <span>0.9997</span>
+                                <span class="tvdpass">0.0272 ✓</span>
+                            </div>
+                            <div class="bench-row">
+                                <span class="bcircuit">Deep Rand</span>
+                                <span class="bfail">0.8917</span>
+                                <span>0.9952</span>
+                                <span class="tvdfail">0.2684 ✗</span>
+                            </div>
+                            <p class="bench-note">TVD threshold: <strong>0.03</strong>. Deep Random requires per-device calibration of σᵢ noise weights.</p>
+                        </div>
+                    </div>
+
+                </div><!-- /deploy-split -->
+
+                <div class="stat-row">
+                    <div class="stat-card">
+                        <p class="stat-label">Bell Fidelity</p>
+                        <p class="stat-value">99.80%</p>
+                        <p class="stat-note">+0.39pp over Aer baseline. Non-Markovian correlation captured in Φ₁ memory channel.</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Pauli Hierarchy</p>
+                        <p class="stat-value">Z ≈ 65%</p>
+                        <p class="stat-note">DPM output: Z:65% / X:22% / Y:13% — matches hardware characterization data.</p>
+                    </div>
+                    <a href="playground.html" class="stat-card stat-card-cta">
+                        <p class="stat-label">Interactive Playground</p>
+                        <p class="stat-arrow">Launch Engine →</p>
+                        <p class="stat-note">Build circuits, enable QNaF noise, inspect the live Φ-field.</p>
+                    </a>
+                </div>
+
+            </div>
+        </section>
 
     </div><!-- /snap-container -->
 
