@@ -70,6 +70,32 @@
     .clr-btn { padding: 3px 7px; font-size: 10px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.14); background: transparent; color: rgba(255,255,255,0.45); cursor: pointer; }
     .clr-btn:hover { color: #fff; }
 
+    /* ── PRESET STRIP ── */
+    .preset-strip {
+      display: flex; gap: 4px; flex-wrap: wrap;
+      padding: 5px 0 7px; flex-shrink: 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      margin-bottom: 7px;
+    }
+    .pchip-label { font-size: 9px; color: rgba(255,255,255,0.25); align-self: center; white-space: nowrap; margin-right: 2px; letter-spacing: .06em; text-transform: uppercase; }
+    .pchip {
+      padding: 3px 9px; font-size: 10px; border-radius: 2px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03);
+      color: rgba(255,255,255,0.55);
+      cursor: pointer; font-family: 'IBM Plex Mono', monospace;
+      transition: all .15s; white-space: nowrap;
+    }
+    .pchip:hover { border-color: #3498db; color: #3498db; background: rgba(52,152,219,0.08); }
+    .pchip.active { border-color: #3498db; color: #3498db; background: rgba(52,152,219,0.15); }
+
+    /* Preset info tooltip strip */
+    #preset-info {
+      font-size: 9px; color: rgba(255,255,255,0.3);
+      min-height: 13px; margin-bottom: 4px; flex-shrink: 0;
+      letter-spacing: .04em;
+    }
+
     #metaBox { flex: 1; margin-top: 6px; background: rgba(0,0,0,0.5); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.06); font-size: 10px; line-height: 1.55; padding: 7px; resize: none; outline: none; }
 
     #circuit-bottom { flex: 1 1 auto; display: grid; grid-template-columns: 2fr 1fr; min-height: 0; }
@@ -239,6 +265,18 @@
             <button id="clearBtn" class="clr-btn">Clear</button>
           </div>
         </div>
+
+        <!-- ── PRESET STRIP ── -->
+        <div class="preset-strip">
+          <span class="pchip-label">Presets:</span>
+          <button class="pchip" data-preset="bell">Bell Pair</button>
+          <button class="pchip" data-preset="ghz">GHZ (4q)</button>
+          <button class="pchip" data-preset="grover">Grover (2q)</button>
+          <button class="pchip" data-preset="teleport">Teleportation</button>
+          <button class="pchip" data-preset="deutsch">Deutsch-Jozsa</button>
+        </div>
+        <div id="preset-info"></div>
+
         <div id="circuit-inner"><canvas id="circuitCanvas"></canvas></div>
       </div>
 
@@ -248,6 +286,7 @@
         <textarea id="metaBox" spellcheck="false"># QtorchX Circuit Builder
 # ─────────────────────
 # Drag gates onto grid.
+# Or click a Preset →
 # Last column = Measure.
 #
 # Noise  → φ-manifold
@@ -308,7 +347,6 @@
 
       <div id="cmpResults" class="hidden" style="display:flex;flex-direction:column;gap:12px;">
         <div id="agBadge" class="abadge ab-hi" style="display:none;"></div>
-
         <div class="mstrip">
           <div class="mc"><div class="v" id="mFidelity">—</div><div class="l">Engine Fidelity</div></div>
           <div class="mc"><div class="v pu" id="mTVD">—</div><div class="l">TVD (noise diff)</div></div>
@@ -316,7 +354,6 @@
           <div class="mc"><div class="v pu" id="mAerTime">—</div><div class="l">Aer Time</div></div>
           <div class="mc"><div class="v go" id="mShots">—</div><div class="l">Shots</div></div>
         </div>
-
         <div class="tcol">
           <div class="ecrd">
             <div class="eh"><div class="edot qtx"></div><div><h3 style="color:#3498db">QtorchX φ-Manifold</h3><div class="esub" id="qtxNoiseSub">6-channel spatiotemporal φ-field</div></div></div>
@@ -329,12 +366,10 @@
             <div class="etim" id="aerTiming"></div>
           </div>
         </div>
-
         <div class="gcard">
           <div class="ctitle">Noisy Overlay — QtorchX (blue) vs Qiskit Aer (purple)</div>
           <canvas id="overlayChart"></canvas>
         </div>
-
         <div class="gcard">
           <div class="ctitle">Probability Table</div>
           <div class="prow">
@@ -357,36 +392,24 @@
   <!-- ═══ VQE DEMO ═══ -->
   <div id="tab-vqe" class="tab-panel">
     <div class="vpage">
-
       <div class="vtop">
         <h1>VQE Live Demo: Ideal vs Noisy</h1>
         <p>H₂ molecule optimization — watch noise affect convergence in real time · 25 random scenarios</p>
       </div>
-
       <div class="vgrid">
         <div class="vcol">
           <div class="vcc ideal">
-            <div class="vch">
-              <h3 class="ic">Ideal Circuit</h3>
-              <span id="ideal-circuit-status" class="cstatus ready">Ready</span>
-            </div>
+            <div class="vch"><h3 class="ic">Ideal Circuit</h3><span id="ideal-circuit-status" class="cstatus ready">Ready</span></div>
             <svg id="ideal-circuit-svg" class="circuit-svg"></svg>
           </div>
           <div class="vcc noisy">
-            <div class="vch">
-              <h3 class="nc">Noisy Circuit</h3>
-              <span id="noisy-circuit-status" class="cstatus ready">Ready</span>
-            </div>
+            <div class="vch"><h3 class="nc">Noisy Circuit</h3><span id="noisy-circuit-status" class="cstatus ready">Ready</span></div>
             <svg id="noisy-circuit-svg" class="circuit-svg"></svg>
           </div>
         </div>
-
         <div class="vcol">
           <div class="gcrd">
-            <div class="ghdr">
-              <h3>Energy Convergence</h3>
-              <span id="graph-status" class="gst">Click Run to start...</span>
-            </div>
+            <div class="ghdr"><h3>Energy Convergence</h3><span id="graph-status" class="gst">Click Run to start...</span></div>
             <canvas id="comparison-chart"></canvas>
           </div>
           <div class="vbtns">
@@ -406,7 +429,6 @@
           </div>
         </div>
       </div>
-
     </div>
   </div>
 
@@ -423,7 +445,7 @@
 'use strict';
 
 // ════════════════════════════════════════════════════════════
-// ANIMATED BACKGROUND (bezier field from webgl_test.html)
+// ANIMATED BACKGROUND
 // ════════════════════════════════════════════════════════════
 const bgC = document.getElementById('bg-canvas');
 const bgX = bgC.getContext('2d');
@@ -523,14 +545,11 @@ function initQSphere() {
   qsScene.add(new THREE.AmbientLight(0xffffff,0.9));
   const dl=new THREE.DirectionalLight(0xffffff,0.8); dl.position.set(5,5,5); qsScene.add(dl);
   const dl2=new THREE.DirectionalLight(0x3498db,0.4); dl2.position.set(-5,-3,2); qsScene.add(dl2);
-  // wireframe sphere — visible blue tint
   qsScene.add(new THREE.Mesh(new THREE.SphereGeometry(1.5,24,16),
     new THREE.MeshBasicMaterial({color:0x1e4a7a,wireframe:true,transparent:true,opacity:0.35})));
-  // equator ring — bright blue
   const eq=new THREE.Mesh(new THREE.TorusGeometry(1.5,0.022,8,64),
     new THREE.MeshBasicMaterial({color:0x3498db,transparent:true,opacity:0.9}));
   eq.rotation.x=Math.PI/2; qsScene.add(eq);
-  // axis lines
   const axMat=new THREE.LineBasicMaterial({color:0x3498db,transparent:true,opacity:0.4});
   [[new THREE.Vector3(-1.8,0,0),new THREE.Vector3(1.8,0,0)],
    [new THREE.Vector3(0,-1.8,0),new THREE.Vector3(0,1.8,0)],
@@ -538,7 +557,6 @@ function initQSphere() {
     const g=new THREE.BufferGeometry().setFromPoints([a,b]);
     qsScene.add(new THREE.Line(g,axMat));
   });
-  // pole labels
   [['|0⟩',1.95],['|1⟩',-1.95]].forEach(([t,y])=>{
     const c=document.createElement('canvas'); c.width=160; c.height=72;
     const cx=c.getContext('2d');
@@ -725,6 +743,7 @@ function placeGate(name,q,t){
   gateList.push(obj); for(const qq of qubits) circuit[qq][t]=obj; return true;
 }
 function setWarn(m){ document.getElementById('warn').textContent=m; }
+
 function clearCircuit(){
   for(let q=0;q<N_QUBITS;q++) for(let t=0;t<N_STEPS;t++) circuit[q][t]=null;
   gateList=[]; histData=null; window.lastPhi=null;
@@ -733,32 +752,160 @@ function clearCircuit(){
 }
 document.getElementById('clearBtn').addEventListener('click',clearCircuit);
 
-// Draw circuit
+// ════════════════════════════════════════════════════════════
+// CIRCUIT PRESETS
+// ════════════════════════════════════════════════════════════
+// Each preset is defined as an array of gate objects.
+// Directly populates circuit[][] and gateList to bypass the
+// pairQ auto-assignment (so we control exact qubit routing).
+const CIRCUIT_PRESETS = {
+  bell: {
+    num_qubits: 2,
+    name: 'Bell Pair',
+    description: 'Maximally entangled 2-qubit state · Equal superposition of |00⟩ and |11⟩',
+    log: '# Bell Pair  |Φ+⟩ = (|00⟩ + |11⟩) / √2\n# ──────────────────────────────\n# H on q[0] creates superposition.\n# CNOT entangles q[0] → q[1].\n# Measures collapse to 00 or 11\n# with equal probability (50/50).\n#\n# Bell states are the foundation\n# of quantum teleportation and\n# superdense coding.',
+    gates: [
+      {name:'H',    qubits:[0],   t:0},
+      {name:'CNOT', qubits:[0,1], t:1}
+    ]
+  },
+
+  ghz: {
+    num_qubits: 4,
+    name: 'GHZ State',
+    description: '4-qubit Greenberger–Horne–Zeilinger · Global entanglement across all qubits',
+    log: '# GHZ State  (|0000⟩ + |1111⟩) / √2\n# ──────────────────────────────\n# A single H + 3 cascaded CNOTs\n# creates a maximally entangled\n# 4-qubit state.\n#\n# Measuring any single qubit\n# instantly collapses ALL others.\n# Demonstrates quantum non-locality\n# and is used in quantum error\n# correction codes.',
+    gates: [
+      {name:'H',    qubits:[0],   t:0},
+      {name:'CNOT', qubits:[0,1], t:1},
+      {name:'CNOT', qubits:[1,2], t:2},
+      {name:'CNOT', qubits:[2,3], t:3}
+    ]
+  },
+  grover: {
+    num_qubits: 2,
+    name: 'Grover (2q)',
+    description: 'Grover\'s search algorithm · Quadratic speedup finding |11⟩ in 2-qubit space',
+    log: '# Grover\'s Search Algorithm\n# ──────────────────────────────\n# Searches unsorted database of\n# N=4 items in O(√N) steps.\n# Classical: O(N), Quantum: O(√N)\n#\n# Phase 1 — Superposition:\n#   H⊗H puts all states at 25%\n#\n# Phase 2 — Oracle (marks |11⟩):\n#   CZ flips phase of |11⟩ only\n#\n# Phase 3 — Diffusion (amplify):\n#   H·(2|0⟩⟨0|-I)·H boosts target\n#\n# Result: |11⟩ appears ~100%.',
+    gates: [
+      {name:'H',  qubits:[0],   t:0},
+      {name:'H',  qubits:[1],   t:0},
+      {name:'CZ', qubits:[0,1], t:1},
+      {name:'H',  qubits:[0],   t:2},
+      {name:'H',  qubits:[1],   t:2},
+      {name:'X',  qubits:[0],   t:3},
+      {name:'X',  qubits:[1],   t:3},
+      {name:'CZ', qubits:[0,1], t:4},
+      {name:'X',  qubits:[0],   t:5},
+      {name:'X',  qubits:[1],   t:5},
+      {name:'H',  qubits:[0],   t:6},
+      {name:'H',  qubits:[1],   t:6}
+    ]
+  },
+
+  teleport: {
+    num_qubits: 3,
+    name: 'Teleportation',
+    description: 'Quantum teleportation protocol · Transfers q[2] state to q[0] using entanglement',
+    log: '# Quantum Teleportation\n# ──────────────────────────────\n# Transfers an unknown quantum\n# state using entanglement +\n# 2 classical bits of info.\n#\n# Step 1 — Bell pair: H + CNOT\n#   Entangle q[0] and q[1]\n#\n# Step 2 — Bell measurement:\n#   CNOT + H on message qubit q[2]\n#   and q[1] (the channel qubit)\n#\n# Step 3 — Corrections (omitted):\n#   Classical bits route X/Z\n#   corrections to receiver q[0]\n#\n# No faster-than-light transfer!\n# Classical channel still needed.',
+    gates: [
+      {name:'H',    qubits:[0],   t:0},
+      {name:'CNOT', qubits:[0,1], t:1},
+      {name:'X',    qubits:[2],   t:0},
+      {name:'CNOT', qubits:[2,1], t:2},
+      {name:'H',    qubits:[2],   t:3},
+      {name:'CNOT', qubits:[1,0], t:4},
+      {name:'CZ',   qubits:[2,0], t:5}
+    ]
+  },
+  deutsch: {
+    num_qubits: 4,
+    name: 'Deutsch-Jozsa',
+    description: 'Deutsch-Jozsa algorithm · Determines if a function is constant or balanced in 1 query',
+    log: '# Deutsch-Jozsa Algorithm\n# ──────────────────────────────\n# Decides if f: {0,1}ⁿ → {0,1}\n# is CONSTANT or BALANCED\n# using exactly 1 oracle query.\n#\n# Classical: needs 2^(n-1)+1\n# queries in the worst case.\n#\n# Step 1 — Init ancilla q[3]=|1⟩\n#   X on q[3], then H everywhere\n#\n# Step 2 — Oracle Uf (balanced f)\n#   CNOTs implement balanced oracle\n#   flipping ancilla conditionally\n#\n# Step 3 — Hadamard all data qubits\n#\n# Measure q[0..2]: all |0⟩ = constant\n# Any |1⟩ = balanced function.',
+    gates: [
+      {name:'X',    qubits:[3],   t:0},
+      {name:'H',    qubits:[0],   t:1},
+      {name:'H',    qubits:[1],   t:1},
+      {name:'H',    qubits:[2],   t:1},
+      {name:'H',    qubits:[3],   t:1},
+      {name:'CNOT', qubits:[0,3], t:2},
+      {name:'CNOT', qubits:[1,3], t:3},
+      {name:'H',    qubits:[0],   t:4},
+      {name:'H',    qubits:[1],   t:4},
+      {name:'H',    qubits:[2],   t:4}
+    ]
+  }
+};
+
+
+function loadCircuitPreset(key) {
+  const preset = CIRCUIT_PRESETS[key];
+  if (!preset) return;
+
+  // Clear existing circuit state
+  for(let q=0;q<N_QUBITS;q++) for(let t=0;t<N_STEPS;t++) circuit[q][t]=null;
+  gateList=[]; histData=null; window.lastPhi=null;
+  stopPhiAnim(); drawHistogram();
+
+  // Place each gate directly (bypass pairQ auto-assignment)
+  preset.gates.forEach(({name,qubits,t}) => {
+    if(t >= N_STEPS-1) return; // guard: last column reserved for M
+    const obj = {name, qubits: qubits.slice(), t};
+    gateList.push(obj);
+    for(const q of qubits) {
+      if(q < N_QUBITS) circuit[q][t] = obj;
+    }
+  });
+
+  setWarn('');
+  drawCircuit();
+
+  // Update meta log
+  document.getElementById('metaBox').value = preset.log;
+
+  // Show info line
+  document.getElementById('preset-info').textContent = `▸ ${preset.description}`;
+
+  // Highlight active chip
+  document.querySelectorAll('.pchip').forEach(b => b.classList.toggle('active', b.dataset.preset===key));
+}
+
+// Wire up preset chips
+document.querySelectorAll('.pchip').forEach(b => {
+  b.addEventListener('click', () => loadCircuitPreset(b.dataset.preset));
+});
+
+// Clear resets active chip too
+document.getElementById('clearBtn').addEventListener('click', () => {
+  document.querySelectorAll('.pchip').forEach(b => b.classList.remove('active'));
+  document.getElementById('preset-info').textContent='';
+  clearCircuit();
+});
+
+// ════════════════════════════════════════════════════════════
+// DRAW CIRCUIT
+// ════════════════════════════════════════════════════════════
 function drawCircuit(){
   ctx.clearRect(0,0,W,H);
   ctx.fillStyle='#0b0f1c'; ctx.fillRect(0,0,W,H);
-  // row bands (alternate subtle shading)
   for(let r=0;r<N_QUBITS;r++){
     if(r%2===0){ ctx.fillStyle='rgba(52,152,219,0.04)'; ctx.fillRect(0,r*cH,W,cH); }
   }
   for(let r=0;r<ROWS;r++){
     const y=(r+0.5)*cH;
-    // qubit wire line
     ctx.strokeStyle='rgba(52,152,219,0.18)'; ctx.lineWidth=1;
     ctx.setLineDash([4,4]);
     ctx.beginPath(); ctx.moveTo(cW*0.6,y); ctx.lineTo(W,y); ctx.stroke();
     ctx.setLineDash([]);
-    // row separator
     ctx.strokeStyle='rgba(255,255,255,0.08)'; ctx.lineWidth=1;
     ctx.beginPath(); ctx.moveTo(0,r*cH); ctx.lineTo(W,r*cH); ctx.stroke();
-    // label
     ctx.fillStyle='rgba(255,255,255,0.75)'; ctx.font='bold 10px "IBM Plex Mono",monospace';
     ctx.textAlign='left'; ctx.textBaseline='middle';
     ctx.fillText(r<N_QUBITS?`q[${r}]`:`c[0]`,4,y);
   }
   ctx.strokeStyle='rgba(255,255,255,0.08)'; ctx.lineWidth=1;
   for(let t=0;t<N_STEPS;t++){ const x=t*cW; ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
-  // measure column highlight
   ctx.fillStyle='rgba(52,152,219,0.1)'; ctx.fillRect((N_STEPS-1)*cW,0,cW,N_QUBITS*cH);
   ctx.strokeStyle='rgba(52,152,219,0.3)'; ctx.lineWidth=1;
   ctx.beginPath(); ctx.moveTo((N_STEPS-1)*cW,0); ctx.lineTo((N_STEPS-1)*cW,N_QUBITS*cH); ctx.stroke();
@@ -854,7 +1001,9 @@ circ.addEventListener('click',e=>{
   placeGate(g.name,q,g.t); drawCircuit();
 });
 
-// Histogram
+// ════════════════════════════════════════════════════════════
+// HISTOGRAM
+// ════════════════════════════════════════════════════════════
 function drawHistogram(){
   const hc=document.getElementById('histCanvas'); if(!hc) return;
   const hx=hc.getContext('2d');
@@ -900,22 +1049,10 @@ function drawHistogram(){
 }
 
 // ════════════════════════════════════════════════════════════
-// PHI-FIELD — cell-bilinear · inferno colormap · scientific heatmap
+// PHI-FIELD — inferno colormap heatmap
 // ════════════════════════════════════════════════════════════
-
-// φ-field colormap: inferno — black → purple → red → orange → cream
 const PHI_LUT=(()=>{
-  const cp=[
-    [0,   0,   4  ],  // 0.00 black
-    [20,  11,  53 ],  // 0.13 dark purple
-    [58,  9,   99 ],  // 0.25 deep purple
-    [96,  19,  110],  // 0.38 purple-magenta
-    [145, 38,  103],  // 0.50 dark rose
-    [192, 65,  79 ],  // 0.63 crimson-orange
-    [228, 103, 44 ],  // 0.75 orange
-    [249, 163, 21 ],  // 0.88 amber
-    [252, 255, 164],  // 1.00 cream-yellow
-  ];
+  const cp=[[0,0,4],[20,11,53],[58,9,99],[96,19,110],[145,38,103],[192,65,79],[228,103,44],[249,163,21],[252,255,164]];
   const lut=new Uint8Array(256*3);
   for(let i=0;i<256;i++){
     const t=i/255, x=t*(cp.length-1);
@@ -932,64 +1069,41 @@ function renderPhiField(phi){
   const NQ=phi.length, NT=phi[0].length;
   const fieldW=Math.floor(cW*(NT-1)), fieldH=Math.floor(cH*NQ);
   if(fieldW<=0||fieldH<=0) return;
-
-  // Normalize to [lo, hi]
   let lo=Infinity,hi=-Infinity;
   for(const row of phi) for(const v of row){lo=Math.min(lo,v);hi=Math.max(hi,v);}
   if(hi===lo) hi=lo+1;
   const range=hi-lo;
-
-  // Cell dimensions in canvas pixels
   const cellW=fieldW/(NT-1), cellH=fieldH/NQ;
-
-  // Render at native field resolution via ImageData
   const id=ctx.createImageData(fieldW,fieldH);
   for(let py=0;py<fieldH;py++){
     for(let px=0;px<fieldW;px++){
-      // Cell-centered bilinear (matches matplotlib imshow behaviour)
       let fq=py/cellH-0.5, ft=px/cellW-0.5;
       fq=Math.max(0,Math.min(NQ-1.001,fq));
       ft=Math.max(0,Math.min(NT-2.001,ft));
       const qi=Math.floor(fq), ti=Math.floor(ft);
       const dq=fq-qi, dt=ft-ti;
       const q1=Math.min(qi+1,NQ-1), t1=Math.min(ti+1,NT-1);
-      const v00=(phi[qi ][ti ]-lo)/range, v01=(phi[qi ][t1]-lo)/range;
-      const v10=(phi[q1][ti ]-lo)/range, v11=(phi[q1][t1]-lo)/range;
+      const v00=(phi[qi][ti]-lo)/range, v01=(phi[qi][t1]-lo)/range;
+      const v10=(phi[q1][ti]-lo)/range, v11=(phi[q1][t1]-lo)/range;
       const bil=v00*(1-dt)*(1-dq)+v01*dt*(1-dq)+v10*(1-dt)*dq+v11*dt*dq;
-      // Subtle traveling-wave animation
       const w=0.03*Math.sin(fq*2.2+phiAnimT*2.0)*Math.cos(ft*1.8-phiAnimT*1.5);
       const n=Math.max(0,Math.min(1,bil+w));
       const ci=Math.min(255,Math.floor(n*255));
       const ii=(py*fieldW+px)*4;
-      id.data[ii]  =PHI_LUT[ci*3  ];
-      id.data[ii+1]=PHI_LUT[ci*3+1];
-      id.data[ii+2]=PHI_LUT[ci*3+2];
-      id.data[ii+3]=Math.round((0.82+0.14*n)*255);
+      id.data[ii]=PHI_LUT[ci*3]; id.data[ii+1]=PHI_LUT[ci*3+1];
+      id.data[ii+2]=PHI_LUT[ci*3+2]; id.data[ii+3]=Math.round((0.82+0.14*n)*255);
     }
   }
-
-  // Blit via offscreen canvas to respect DPR transform
   if(!phiOffscreen||phiOffW!==fieldW||phiOffH!==fieldH){
     phiOffscreen=document.createElement('canvas');
     phiOffscreen.width=phiOffW=fieldW; phiOffscreen.height=phiOffH=fieldH;
   }
   phiOffscreen.getContext('2d').putImageData(id,0,0);
-  ctx.save();
-  ctx.imageSmoothingEnabled=false;
-  ctx.drawImage(phiOffscreen,0,0);
-  ctx.restore();
-
-  // Subtle cell grid lines
-  ctx.save();
-  ctx.strokeStyle='rgba(255,255,255,0.09)';
-  ctx.lineWidth=0.5;
-  ctx.beginPath();
+  ctx.save(); ctx.imageSmoothingEnabled=false; ctx.drawImage(phiOffscreen,0,0); ctx.restore();
+  ctx.save(); ctx.strokeStyle='rgba(255,255,255,0.09)'; ctx.lineWidth=0.5; ctx.beginPath();
   for(let q=1;q<NQ;q++){const y=q*cellH;ctx.moveTo(0,y);ctx.lineTo(fieldW,y);}
   for(let t=1;t<NT-1;t++){const x=t*cellW;ctx.moveTo(x,0);ctx.lineTo(x,fieldH);}
-  ctx.stroke();
-  ctx.restore();
-
-  // White iso-contours + colorbar
+  ctx.stroke(); ctx.restore();
   drawPhiContours(phi,NQ,NT,fieldW,fieldH,lo,range);
   drawPhiColorbar(fieldW,fieldH,lo,hi);
 }
@@ -999,25 +1113,19 @@ function drawPhiContours(phi,NQ,NT,fieldW,fieldH,lo,range){
   const numC=5;
   const edgeLerp=(a,b,va,vb,lv)=>{const d=vb-va;return d===0?a+(b-a)*0.5:a+(b-a)*(lv-va)/d;};
   const pulse=0.22+0.10*Math.abs(Math.sin(phiAnimT*0.5));
-  ctx.save();
-  ctx.strokeStyle=`rgba(255,255,255,${pulse.toFixed(2)})`;
-  ctx.lineWidth=0.75;
+  ctx.save(); ctx.strokeStyle=`rgba(255,255,255,${pulse.toFixed(2)})`; ctx.lineWidth=0.75;
   for(let ci=0;ci<numC;ci++){
     const level=lo+(ci+1)/(numC+1)*range;
     ctx.beginPath();
     for(let q=0;q<NQ-1;q++){
       for(let t=0;t<NT-2;t++){
-        const vTL=phi[q  ][t  ], vTR=phi[q  ][t+1];
-        const vBL=phi[q+1][t  ], vBR=phi[q+1][t+1];
+        const vTL=phi[q][t],vTR=phi[q][t+1],vBL=phi[q+1][t],vBR=phi[q+1][t+1];
         const cs=(vTL>level?8:0)|(vTR>level?4:0)|(vBR>level?2:0)|(vBL>level?1:0);
         if(cs===0||cs===15) continue;
         const x0=t*cellW,y0=q*cellH,x1=(t+1)*cellW,y1=(q+1)*cellH;
-        const tE=[edgeLerp(x0,x1,vTL,vTR,level),y0], rE=[x1,edgeLerp(y0,y1,vTR,vBR,level)];
-        const bE=[edgeLerp(x0,x1,vBL,vBR,level),y1], lE=[x0,edgeLerp(y0,y1,vTL,vBL,level)];
-        const segs={1:[[lE,bE]],2:[[bE,rE]],3:[[lE,rE]],4:[[tE,rE]],
-          5:[[tE,rE],[lE,bE]],6:[[tE,bE]],7:[[tE,lE]],8:[[tE,lE]],
-          9:[[tE,bE]],10:[[tE,lE],[bE,rE]],11:[[tE,rE]],12:[[lE,rE]],
-          13:[[bE,rE]],14:[[lE,bE]]}[cs]||[];
+        const tE=[edgeLerp(x0,x1,vTL,vTR,level),y0],rE=[x1,edgeLerp(y0,y1,vTR,vBR,level)];
+        const bE=[edgeLerp(x0,x1,vBL,vBR,level),y1],lE=[x0,edgeLerp(y0,y1,vTL,vBL,level)];
+        const segs={1:[[lE,bE]],2:[[bE,rE]],3:[[lE,rE]],4:[[tE,rE]],5:[[tE,rE],[lE,bE]],6:[[tE,bE]],7:[[tE,lE]],8:[[tE,lE]],9:[[tE,bE]],10:[[tE,lE],[bE,rE]],11:[[tE,rE]],12:[[lE,rE]],13:[[bE,rE]],14:[[lE,bE]]}[cs]||[];
         for(const[p1,p2] of segs){ctx.moveTo(p1[0],p1[1]);ctx.lineTo(p2[0],p2[1]);}
       }
     }
@@ -1029,43 +1137,25 @@ function drawPhiContours(phi,NQ,NT,fieldW,fieldH,lo,range){
 function drawPhiColorbar(fieldW,fieldH,lo,hi){
   const cbW=9, cbH=fieldH-22, cbX=fieldW-cbW-20, cbY=11;
   ctx.save();
-  // Dark backdrop
-  ctx.fillStyle='rgba(8,8,12,0.60)';
-  ctx.fillRect(cbX-5,cbY-13,cbW+32,cbH+26);
-  // Gradient strip: high (cream) at top → low (black) at bottom
+  ctx.fillStyle='rgba(8,8,12,0.60)'; ctx.fillRect(cbX-5,cbY-13,cbW+32,cbH+26);
   const grad=ctx.createLinearGradient(0,cbY,0,cbY+cbH);
-  grad.addColorStop(0,    'rgb(252,255,164)');
-  grad.addColorStop(0.13, 'rgb(249,163,21)');
-  grad.addColorStop(0.25, 'rgb(228,103,44)');
-  grad.addColorStop(0.38, 'rgb(192,65,79)');
-  grad.addColorStop(0.50, 'rgb(145,38,103)');
-  grad.addColorStop(0.63, 'rgb(96,19,110)');
-  grad.addColorStop(0.75, 'rgb(58,9,99)');
-  grad.addColorStop(0.88, 'rgb(20,11,53)');
-  grad.addColorStop(1,    'rgb(0,0,4)');
-  ctx.fillStyle=grad;
-  ctx.fillRect(cbX,cbY,cbW,cbH);
-  ctx.strokeStyle='rgba(255,255,255,0.22)';
-  ctx.lineWidth=0.5;
-  ctx.strokeRect(cbX,cbY,cbW,cbH);
-  // Tick marks + labels
-  ctx.fillStyle='rgba(215,215,220,0.88)';
-  ctx.font='9px monospace';
-  ctx.textAlign='left';
+  grad.addColorStop(0,'rgb(252,255,164)'); grad.addColorStop(0.13,'rgb(249,163,21)');
+  grad.addColorStop(0.25,'rgb(228,103,44)'); grad.addColorStop(0.38,'rgb(192,65,79)');
+  grad.addColorStop(0.50,'rgb(145,38,103)'); grad.addColorStop(0.63,'rgb(96,19,110)');
+  grad.addColorStop(0.75,'rgb(58,9,99)'); grad.addColorStop(0.88,'rgb(20,11,53)');
+  grad.addColorStop(1,'rgb(0,0,4)');
+  ctx.fillStyle=grad; ctx.fillRect(cbX,cbY,cbW,cbH);
+  ctx.strokeStyle='rgba(255,255,255,0.22)'; ctx.lineWidth=0.5; ctx.strokeRect(cbX,cbY,cbW,cbH);
+  ctx.fillStyle='rgba(215,215,220,0.88)'; ctx.font='9px monospace'; ctx.textAlign='left';
   ctx.beginPath();
-  const ticks=[0,0.25,0.5,0.75,1.0];
-  for(const t of ticks){
+  for(const t of [0,0.25,0.5,0.75,1.0]){
     const y=cbY+t*cbH;
     ctx.moveTo(cbX+cbW,y); ctx.lineTo(cbX+cbW+3,y);
     ctx.fillText((lo+(1-t)*(hi-lo)).toFixed(2),cbX+cbW+5,y+3);
   }
-  ctx.strokeStyle='rgba(255,255,255,0.38)';
-  ctx.stroke();
-  // φ label
-  ctx.fillStyle='rgba(195,195,208,0.90)';
-  ctx.font='bold 9px monospace';
-  ctx.textAlign='center';
-  ctx.fillText('φ',cbX+cbW/2,cbY-4);
+  ctx.strokeStyle='rgba(255,255,255,0.38)'; ctx.stroke();
+  ctx.fillStyle='rgba(195,195,208,0.90)'; ctx.font='bold 9px monospace';
+  ctx.textAlign='center'; ctx.fillText('φ',cbX+cbW/2,cbY-4);
   ctx.restore();
 }
 
@@ -1079,7 +1169,9 @@ function stopPhiAnim(){
   drawCircuit();
 }
 
-// Loading
+// ════════════════════════════════════════════════════════════
+// LOADING
+// ════════════════════════════════════════════════════════════
 const LOAD_MSGS=['Building quantum circuit...','Initializing state vectors...','Applying quantum gates...','Computing observables...','Extracting φ-manifold...','Finalizing simulation...'];
 let lInt=null, lIdx=0;
 function showLoading(msg){
@@ -1096,10 +1188,11 @@ function hideLoading(){
   setTimeout(()=>document.getElementById('loadingOverlay').classList.add('hidden'),400);
 }
 
-// Fidelity
 function calcFid(ideal,noisy){let f=0;for(const s in ideal)f+=Math.sqrt((ideal[s]||0)*((noisy&&noisy[s])||0));return f;}
 
-// Run simulation
+// ════════════════════════════════════════════════════════════
+// RUN SIMULATION
+// ════════════════════════════════════════════════════════════
 document.getElementById('runBtn').addEventListener('click',async()=>{
   const noise=document.getElementById('noiseToggle').checked;
   const inspect=document.getElementById('inspectToggle').checked;
@@ -1128,7 +1221,7 @@ document.getElementById('runBtn').addEventListener('click',async()=>{
       fid!==null?'':null, fid!==null?'FIDELITY (Bhattacharyya)':null, fid!==null?`  Ideal vs Noisy  ${fid.toFixed(4)}`:null,
     ].filter(l=>l!==null).join('\n');
     window.lastPhi=res.phi_manifold;
-    if(inspect&&window.lastPhi) startPhiAnim(); else {stopPhiAnim();}
+    if(inspect&&window.lastPhi) startPhiAnim(); else stopPhiAnim();
     drawCircuit(); hideLoading();
   }catch(err){
     hideLoading();
@@ -1199,7 +1292,6 @@ function renderCmpResults(data){
   document.getElementById('mQtxTime').textContent=qtx.time_seconds!=null?qtx.time_seconds+'s':'—';
   document.getElementById('mAerTime').textContent=aer.time_seconds!=null?aer.time_seconds+'s':'—';
   document.getElementById('mShots').textContent=data.shots?.toLocaleString()||'—';
-
   const badge=document.getElementById('agBadge');
   const fp=met.fidelity_between_engines!=null?met.fidelity_between_engines*100:null;
   if(fp!==null){
@@ -1208,26 +1300,20 @@ function renderCmpResults(data){
     else if(fp>=80){badge.classList.add('ab-mod');badge.textContent='◈ MODERATE AGREEMENT';}
     else{badge.classList.add('ab-div');badge.textContent='◆ DIVERGENT';}
   }
-
   if(qtx.noise_model) document.getElementById('qtxNoiseSub').textContent=qtx.noise_model;
   if(aer.noise_model) document.getElementById('aerNoiseSub').textContent=aer.noise_model;
   if(qtx.time_seconds) document.getElementById('qtxTiming').textContent=`⏱ ${qtx.time_seconds}s`;
   if(aer.time_seconds) document.getElementById('aerTiming').textContent=`⏱ ${aer.time_seconds}s`;
-
   const allStates=[...new Set([...Object.keys(qtx.ideal_probs||{}),...Object.keys(qtx.noisy_probs||{}),...Object.keys(aer.ideal_probs||{}),...Object.keys(aer.noisy_probs||{})])].sort();
   const sig=allStates.filter(s=>Math.max((qtx.ideal_probs||{})[s]||0,(qtx.noisy_probs||{})[s]||0,(aer.ideal_probs||{})[s]||0,(aer.noisy_probs||{})[s]||0)>0.005);
   const labels=sig.map(s=>'|'+s+'⟩');
-
   if(chartQTX){chartQTX.destroy();chartQTX=null;}
   if(chartAer){chartAer.destroy();chartAer=null;}
   if(chartOvl){chartOvl.destroy();chartOvl=null;}
-
   chartQTX=mkEngChart('qtxChart',labels,sig,qtx.ideal_probs||{},qtx.noisy_probs||{},'rgba(52,152,219,0.3)','#3498db');
   chartAer=mkEngChart('aerChart',labels,sig,aer.ideal_probs||{},aer.noisy_probs||{},'rgba(155,89,182,0.3)','#9b59b6');
   chartOvl=mkOvlChart(labels,sig,qtx.ideal_probs||{},qtx.noisy_probs||{},aer.noisy_probs||{});
-
   renderTable(sig,qtx.ideal_probs||{},qtx.noisy_probs||{},aer.noisy_probs||{});
-
   const r=document.getElementById('cmpResults');
   r.classList.remove('hidden'); r.style.display='flex';
 }
@@ -1271,7 +1357,7 @@ function hideCmpErr(){document.getElementById('cmpErr').style.display='none';}
 function hideResults(){const r=document.getElementById('cmpResults');r.classList.add('hidden');r.style.display='';}
 
 // ════════════════════════════════════════════════════════════
-// VQE DEMO  (client-side animation, 25 scenarios)
+// VQE DEMO
 // ════════════════════════════════════════════════════════════
 const GSE=-1.137283834;
 const PARAM_PROFILES=[
@@ -1348,9 +1434,8 @@ class CircuitDraw {
     this.svg.appendChild(this.mk('circle',{cx:x,cy,r:5,fill:color}));
     this.svg.appendChild(this.mk('line',{x1:x,y1:cy,x2:x,y2:ty,stroke:color,'stroke-width':2}));
     this.svg.appendChild(this.mk('circle',{cx:x,cy:ty,r:12,fill:'none',stroke:color,'stroke-width':2}));
-    ['x1','y1','x2','y2'].forEach(()=>{});
-    const dx=8; const lines=[[x-dx,ty-dx,x+dx,ty+dx],[x+dx,ty-dx,x-dx,ty+dx]];
-    lines.forEach(([x1,y1,x2,y2])=>this.svg.appendChild(this.mk('line',{x1,y1,x2,y2,stroke:color,'stroke-width':2})));
+    const dx=8;
+    [[x-dx,ty-dx,x+dx,ty+dx],[x+dx,ty-dx,x-dx,ty+dx]].forEach(([x1,y1,x2,y2])=>this.svg.appendChild(this.mk('line',{x1,y1,x2,y2,stroke:color,'stroke-width':2})));
   }
   update(params){
     params.forEach((v,i)=>{
@@ -1387,7 +1472,7 @@ function initVQEChart(){
     }
   });
   Chart.register({id:'gsLine',afterDatasetsDraw:chart=>{
-    const cx=chart.ctx, ys=chart.scales.y, xs=chart.scales.x;
+    const cx=chart.ctx,ys=chart.scales.y,xs=chart.scales.x;
     const yp=ys.getPixelForValue(GSE);
     cx.save(); cx.strokeStyle='rgba(255,255,255,0.4)'; cx.lineWidth=1.5; cx.setLineDash([5,5]);
     cx.beginPath(); cx.moveTo(xs.left,yp); cx.lineTo(xs.right,yp); cx.stroke();
