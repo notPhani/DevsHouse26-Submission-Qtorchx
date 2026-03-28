@@ -8,6 +8,19 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/postprocessing/Pass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/shaders/CopyShader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/postprocessing/ShaderPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/postprocessing/EffectComposer.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/postprocessing/RenderPass.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+  <script type="module">
+    import { EffectComposer } from 'https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/postprocessing/UnrealBloomPass.js';
+    window.__THREE_POST__ = { EffectComposer, RenderPass, UnrealBloomPass };
+  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; font-family: 'IBM Plex Mono', 'Courier New', monospace; }
@@ -512,8 +525,14 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 // ════════════════════════════════════════════════════════════
 // Q-SPHERE  (Three.js)
 // ════════════════════════════════════════════════════════════
-let qsScene, qsCamera, qsRenderer, qsOk = false;
-let qsArrows = [];
+let qsScene, qsCamera, qsRenderer, qsComposer, qsRoot, qsArrowLayer, qsOk = false;
+let qsFrameHandle = null, qsSharedGeo = null, qsBaseAxis = null;
+const qsArrows = new Map();
+const QS_RADIUS = 1.5;
+const QS_ARROW_TRANSITION_MS = 600;
+const QS_ARROW_ROTATE_SPEED = 0.003;
+const QS_MIN_PROBABILITY = 0.001;
+const QS_LABEL_THRESHOLD = 0.05;
 
 function phaseColor(phi) {
   return new THREE.Color(`hsl(${((phi+Math.PI)/(2*Math.PI))*360},85%,65%)`);
@@ -529,81 +548,326 @@ function qspos(lbl,nQ) {
     if ((i.toString(2).padStart(nQ,'0').match(/1/g)||[]).length===hw) ring++;
   }
   const phi=(ring/tot)*2*Math.PI;
-  return new THREE.Vector3(Math.sin(theta)*Math.cos(phi),Math.cos(theta),Math.sin(theta)*Math.sin(phi));
+  return new THREE.Vector3(Math.sin(theta)*Math.cos(phi),Math.cos(theta),Math.sin(theta)*Math.sin(phi)).normalize();
+}
+function ensureQSphereAssets() {
+  if (qsSharedGeo || typeof THREE==='undefined') return;
+  qsBaseAxis = new THREE.Vector3(0,1,0);
+  qsSharedGeo = {
+    shell: new THREE.SphereGeometry(QS_RADIUS, 48, 32),
+    shellWire: new THREE.WireframeGeometry(new THREE.SphereGeometry(QS_RADIUS, 24, 16)),
+    shaft: new THREE.CylinderGeometry(0.035, 0.022, 1, 18, 1, true),
+    head: new THREE.ConeGeometry(0.095, 1, 20, 1, true)
+  };
+}
+function makeArrowMaterial(color, emissiveIntensity, opacity) {
+  return new THREE.MeshStandardMaterial({
+    color: color.clone(),
+    emissive: color.clone(),
+    emissiveIntensity,
+    metalness: 0.08,
+    roughness: 0.18,
+    transparent: true,
+    opacity,
+    depthWrite: false
+  });
+}
+function traceRoundRect(ctx, x, y, w, h, r) {
+  if (typeof ctx.roundRect === 'function') {
+    ctx.roundRect(x, y, w, h, r);
+    return;
+  }
+  const rr=Math.min(r,w*0.5,h*0.5);
+  ctx.moveTo(x+rr,y);
+  ctx.lineTo(x+w-rr,y);
+  ctx.quadraticCurveTo(x+w,y,x+w,y+rr);
+  ctx.lineTo(x+w,y+h-rr);
+  ctx.quadraticCurveTo(x+w,y+h,x+w-rr,y+h);
+  ctx.lineTo(x+rr,y+h);
+  ctx.quadraticCurveTo(x,y+h,x,y+h-rr);
+  ctx.lineTo(x,y+rr);
+  ctx.quadraticCurveTo(x,y,x+rr,y);
+}
+function drawArrowLabel(entity, label, probability, color) {
+  if (!entity.label) {
+    const canvas=document.createElement('canvas');
+    canvas.width=256; canvas.height=96;
+    const texture=new THREE.CanvasTexture(canvas);
+    texture.minFilter=THREE.LinearFilter;
+    texture.magFilter=THREE.LinearFilter;
+    const material=new THREE.SpriteMaterial({map:texture,transparent:true,depthWrite:false});
+    entity.label=new THREE.Sprite(material);
+    entity.labelCtx=canvas.getContext('2d');
+    entity.labelTexture=texture;
+    entity.label.scale.set(0.92,0.34,1);
+    entity.group.add(entity.label);
+  }
+  const ctx=entity.labelCtx, canvas=ctx.canvas, pct=(probability*100).toFixed(1)+'%';
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='rgba(8,13,22,0.32)';
+  ctx.strokeStyle='rgba(255,255,255,0.09)';
+  ctx.lineWidth=1.25;
+  ctx.beginPath();
+  traceRoundRect(ctx,18,12,220,72,14);
+  ctx.fill();
+  ctx.stroke();
+  ctx.shadowColor=color.getStyle();
+  ctx.shadowBlur=18;
+  ctx.fillStyle=color.getStyle();
+  ctx.font='bold 30px "IBM Plex Mono", monospace';
+  ctx.textAlign='center';
+  ctx.fillText(`|${label}⟩`,128,44);
+  ctx.shadowBlur=0;
+  ctx.fillStyle='rgba(255,255,255,0.92)';
+  ctx.font='bold 19px "IBM Plex Mono", monospace';
+  ctx.fillText(pct,128,72);
+  entity.labelTexture.needsUpdate=true;
+  entity.label.visible=probability>=QS_LABEL_THRESHOLD&&!entity.removing;
+}
+function setArrowPose(entity, length) {
+  entity.currentLength=length;
+  const headLength=Math.max(0.18,Math.min(0.34,length*0.28||0.18));
+  const shaftLength=Math.max(0.001,length-headLength);
+  entity.shaft.scale.set(1,shaftLength,1);
+  entity.shaft.position.set(0,shaftLength*0.5,0);
+  entity.head.scale.set(1,headLength,1);
+  entity.head.position.set(0,shaftLength+headLength*0.5,0);
+  if(entity.label) entity.label.position.set(0,length+0.24,0);
+}
+function setArrowColor(entity, color) {
+  entity.shaft.material.color.copy(color);
+  entity.shaft.material.emissive.copy(color);
+  entity.head.material.color.copy(color);
+  entity.head.material.emissive.copy(color);
+}
+function disposeArrowEntity(entity) {
+  if (!entity) return;
+  if (entity.labelTexture) entity.labelTexture.dispose();
+  if (entity.label?.material) entity.label.material.dispose();
+  if (entity.shaft?.material) entity.shaft.material.dispose();
+  if (entity.head?.material) entity.head.material.dispose();
+  if (entity.group?.parent) entity.group.parent.remove(entity.group);
+}
+function createArrowEntity(key, label, direction, length, color, probability, now) {
+  const shaft=new THREE.Mesh(qsSharedGeo.shaft,makeArrowMaterial(color,2.8,0.82));
+  const head=new THREE.Mesh(qsSharedGeo.head,makeArrowMaterial(color,4.2,0.98));
+  const group=new THREE.Group();
+  group.add(shaft); group.add(head);
+  group.quaternion.setFromUnitVectors(qsBaseAxis,direction);
+  qsArrowLayer.add(group);
+  const entity={
+    key,labelKey:label,group,shaft,head,label:null,labelCtx:null,labelTexture:null,
+    currentLength:0,startLength:0,targetLength:length,
+    currentColor:color.clone(),startColor:color.clone(),targetColor:color.clone(),
+    startQuat:group.quaternion.clone(),targetQuat:group.quaternion.clone(),
+    animStart:now,animEnd:now+QS_ARROW_TRANSITION_MS,removing:false,targetProbability:probability
+  };
+  setArrowPose(entity,0.001);
+  setArrowColor(entity,color);
+  drawArrowLabel(entity,label,probability,color);
+  qsArrows.set(key,entity);
+  return entity;
+}
+function scheduleArrowTransition(entity, label, direction, length, color, probability, now) {
+  entity.removing=false;
+  entity.labelKey=label;
+  entity.startQuat.copy(entity.group.quaternion);
+  entity.targetQuat.setFromUnitVectors(qsBaseAxis,direction);
+  entity.startLength=entity.currentLength;
+  entity.targetLength=length;
+  entity.startColor.copy(entity.currentColor);
+  entity.targetColor.copy(color);
+  entity.animStart=now;
+  entity.animEnd=now+QS_ARROW_TRANSITION_MS;
+  entity.targetProbability=probability;
+  drawArrowLabel(entity,label,probability,color);
+}
+function scheduleArrowRemoval(entity, now) {
+  if (entity.removing) return;
+  entity.removing=true;
+  entity.startQuat.copy(entity.group.quaternion);
+  entity.targetQuat.copy(entity.group.quaternion);
+  entity.startLength=entity.currentLength;
+  entity.targetLength=0;
+  entity.startColor.copy(entity.currentColor);
+  entity.targetColor.copy(entity.currentColor);
+  entity.animStart=now;
+  entity.animEnd=now+QS_ARROW_TRANSITION_MS;
+  entity.targetProbability=0;
+  if (entity.label) entity.label.visible=false;
+}
+function clearQSArrows() {
+  qsArrows.forEach(disposeArrowEntity);
+  qsArrows.clear();
 }
 function initQSphere() {
+  const qsPost=window.__THREE_POST__||THREE;
   if (typeof THREE==='undefined') return;
+  if (qsOk) { resizeQSphere(); return; }
+  ensureQSphereAssets();
   const cv=document.getElementById('blochCanvas'), ct=document.getElementById('qs-cont');
   if (!cv||!ct) return;
   const r=ct.getBoundingClientRect();
-  qsScene=new THREE.Scene(); qsScene.background=new THREE.Color(0x090d1a);
-  qsCamera=new THREE.PerspectiveCamera(50,r.width/r.height,0.1,1000);
-  qsCamera.position.set(3.2,2.8,4.5); qsCamera.lookAt(0,0,0);
-  qsRenderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
-  qsRenderer.setSize(r.width-4,Math.max(80,r.height-36));
-  qsRenderer.setPixelRatio(window.devicePixelRatio);
-  qsScene.add(new THREE.AmbientLight(0xffffff,0.9));
-  const dl=new THREE.DirectionalLight(0xffffff,0.8); dl.position.set(5,5,5); qsScene.add(dl);
-  const dl2=new THREE.DirectionalLight(0x3498db,0.4); dl2.position.set(-5,-3,2); qsScene.add(dl2);
-  qsScene.add(new THREE.Mesh(new THREE.SphereGeometry(1.5,24,16),
-    new THREE.MeshBasicMaterial({color:0x1e4a7a,wireframe:true,transparent:true,opacity:0.35})));
-  const eq=new THREE.Mesh(new THREE.TorusGeometry(1.5,0.022,8,64),
-    new THREE.MeshBasicMaterial({color:0x3498db,transparent:true,opacity:0.9}));
-  eq.rotation.x=Math.PI/2; qsScene.add(eq);
-  const axMat=new THREE.LineBasicMaterial({color:0x3498db,transparent:true,opacity:0.4});
+  const width=Math.max(80,r.width-4), height=Math.max(80,r.height-36);
+  qsScene=new THREE.Scene();
+  qsScene.background=new THREE.Color(0x05070f);
+  qsCamera=new THREE.PerspectiveCamera(50,width/height,0.1,1000);
+  qsCamera.position.set(3.2,2.85,4.8);
+  qsCamera.lookAt(0,0,0);
+
+  qsRenderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:false});
+  qsRenderer.setPixelRatio(window.devicePixelRatio||1);
+  qsRenderer.setSize(width,height,false);
+  qsRenderer.outputColorSpace=THREE.SRGBColorSpace;
+  qsRenderer.toneMapping=THREE.ACESFilmicToneMapping;
+  qsRenderer.toneMappingExposure=1.08;
+
+  qsComposer=null;
+  if (qsPost?.EffectComposer && qsPost?.RenderPass && qsPost?.UnrealBloomPass) {
+    qsComposer=new qsPost.EffectComposer(qsRenderer);
+    if (typeof qsComposer.setPixelRatio==='function') qsComposer.setPixelRatio(window.devicePixelRatio||1);
+    qsComposer.setSize(width,height);
+    qsComposer.addPass(new qsPost.RenderPass(qsScene,qsCamera));
+    const bloomPass=new qsPost.UnrealBloomPass(new THREE.Vector2(width,height),1.85,0.98,0.04);
+    bloomPass.threshold=0.04;
+    bloomPass.strength=1.85;
+    bloomPass.radius=0.98;
+    qsComposer.addPass(bloomPass);
+  }
+
+  qsRoot=new THREE.Group();
+  qsArrowLayer=new THREE.Group();
+  qsScene.add(qsRoot);
+  qsRoot.add(qsArrowLayer);
+
+  qsScene.add(new THREE.HemisphereLight(0x74f7ff,0x130018,0.9));
+  const cyan=new THREE.PointLight(0x42f5ff,10,18,2);
+  cyan.position.set(4.8,2.8,4.3);
+  qsScene.add(cyan);
+  const magenta=new THREE.PointLight(0xff4bd8,8,18,2);
+  magenta.position.set(-4.6,-2.3,3.9);
+  qsScene.add(magenta);
+
+  const shell=new THREE.Mesh(
+    qsSharedGeo.shell,
+    new THREE.MeshPhysicalMaterial({
+      color:0x5fc8ff,
+      transparent:true,
+      opacity:0.24,
+      transmission:1,
+      roughness:0.1,
+      ior:1.5,
+      thickness:2.0,
+      metalness:0.02,
+      clearcoat:1,
+      clearcoatRoughness:0.06,
+      attenuationColor:new THREE.Color(0x4dc7ff),
+      attenuationDistance:1.9,
+      side:THREE.DoubleSide,
+      depthWrite:false
+    })
+  );
+  shell.renderOrder=6;
+  qsRoot.add(shell);
+  const shellWire=new THREE.LineSegments(
+    qsSharedGeo.shellWire,
+    new THREE.LineBasicMaterial({color:0x6ee7ff,transparent:true,opacity:0.18})
+  );
+  shellWire.renderOrder=7;
+  qsRoot.add(shellWire);
+
+  const eq=new THREE.Mesh(
+    new THREE.TorusGeometry(QS_RADIUS,0.022,8,96),
+    new THREE.MeshBasicMaterial({color:0x34d8ff,transparent:true,opacity:0.9})
+  );
+  eq.rotation.x=Math.PI/2;
+  qsRoot.add(eq);
+
+  const axMat=new THREE.LineBasicMaterial({color:0x2ccfff,transparent:true,opacity:0.38});
   [[new THREE.Vector3(-1.8,0,0),new THREE.Vector3(1.8,0,0)],
    [new THREE.Vector3(0,-1.8,0),new THREE.Vector3(0,1.8,0)],
    [new THREE.Vector3(0,0,-1.8),new THREE.Vector3(0,0,1.8)]].forEach(([a,b])=>{
     const g=new THREE.BufferGeometry().setFromPoints([a,b]);
-    qsScene.add(new THREE.Line(g,axMat));
+    qsRoot.add(new THREE.Line(g,axMat));
   });
-  [['|0⟩',1.95],['|1⟩',-1.95]].forEach(([t,y])=>{
-    const c=document.createElement('canvas'); c.width=160; c.height=72;
-    const cx=c.getContext('2d');
-    cx.fillStyle='rgba(52,152,219,0.9)'; cx.font='bold 28px monospace'; cx.textAlign='center';
-    cx.fillText(t,80,46);
-    const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true}));
-    sp.position.set(0,y,0); sp.scale.set(1.1,0.55,1); qsScene.add(sp);
+
+  [['|0⟩',1.95],['|1⟩',-1.95]].forEach(([text,y])=>{
+    const canvas=document.createElement('canvas');
+    canvas.width=160; canvas.height=72;
+    const cx=canvas.getContext('2d');
+    cx.fillStyle='rgba(82,229,255,0.95)';
+    cx.shadowColor='rgba(82,229,255,0.95)';
+    cx.shadowBlur=14;
+    cx.font='bold 28px monospace';
+    cx.textAlign='center';
+    cx.fillText(text,80,46);
+    const sp=new THREE.Sprite(new THREE.SpriteMaterial({
+      map:new THREE.CanvasTexture(canvas),
+      transparent:true,
+      depthWrite:false
+    }));
+    sp.position.set(0,y,0);
+    sp.scale.set(1.1,0.55,1);
+    qsRoot.add(sp);
   });
-  qsOk=true; animateQS();
-}
-function clearQSArrows() {
-  qsArrows.forEach(({arrow,lbl})=>{qsScene.remove(arrow);if(lbl)qsScene.remove(lbl);}); qsArrows=[];
+  qsOk=true;
+  animateQS();
 }
 function updateQSphere(states) {
-  if (!qsOk) return; clearQSArrows();
-  const nQ=states[0]?.label?.length||4;
-  [...states].sort((a,b)=>b.probability-a.probability).forEach(s=>{
-    if (s.probability<0.001) return;
-    const lbl=s.label||s.state||'0000', dir=qspos(lbl,nQ);
-    const len=0.2+s.probability*1.3, col=phaseColor(s.phi||0);
-    const arrow=new THREE.ArrowHelper(dir,new THREE.Vector3(0,0,0),len,col.getHex(),0.15,0.10);
-    qsScene.add(arrow);
-    let lsp=null;
-    if (s.probability>0.05) {
-      const c=document.createElement('canvas'); c.width=160; c.height=56;
-      const cx=c.getContext('2d');
-      cx.fillStyle=col.getStyle(); cx.font='bold 24px monospace'; cx.textAlign='center';
-      cx.fillText(`|${lbl}⟩`,80,24); cx.fillStyle='#fff'; cx.font='bold 16px monospace';
-      cx.fillText(`${(s.probability*100).toFixed(1)}%`,80,44);
-      lsp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c)}));
-      lsp.position.copy(dir.clone().multiplyScalar(len+0.3)); lsp.scale.set(0.8,0.28,1);
-      qsScene.add(lsp);
-    }
-    qsArrows.push({arrow,lbl:lsp});
+  if (!qsOk) return;
+  const now=performance.now();
+  const activeKeys=new Set();
+  const ordered=(states||[])
+    .filter(s=>s&&s.probability>=QS_MIN_PROBABILITY)
+    .sort((a,b)=>b.probability-a.probability);
+  const nQ=ordered[0]?.label?.length||ordered[0]?.state?.length||4;
+  ordered.forEach(s=>{
+    const label=s.label||s.state||'0000';
+    const direction=qspos(label,nQ);
+    const length=0.2+s.probability*1.3;
+    const color=phaseColor(Number.isFinite(s.phi)?s.phi:0);
+    activeKeys.add(label);
+    const existing=qsArrows.get(label);
+    if (existing) scheduleArrowTransition(existing,label,direction,length,color,s.probability,now);
+    else createArrowEntity(label,label,direction,length,color,s.probability,now);
+  });
+  qsArrows.forEach((entity,key)=>{
+    if (!activeKeys.has(key)) scheduleArrowRemoval(entity,now);
   });
 }
 function animateQS() {
   if (!qsOk) return;
-  requestAnimationFrame(animateQS);
-  qsScene.rotation.y+=0.003;
-  qsRenderer.render(qsScene,qsCamera);
+  qsFrameHandle=requestAnimationFrame(animateQS);
+  const now=performance.now();
+  qsRoot.rotation.y+=QS_ARROW_ROTATE_SPEED;
+  qsArrows.forEach((entity,key)=>{
+    const duration=Math.max(1,entity.animEnd-entity.animStart);
+    const t=Math.min(1,Math.max(0,(now-entity.animStart)/duration));
+    const eased=t*t*(3-2*t);
+    entity.group.quaternion.copy(entity.startQuat).slerp(entity.targetQuat,eased);
+    setArrowPose(entity,THREE.MathUtils.lerp(entity.startLength,entity.targetLength,eased));
+    entity.currentColor.copy(entity.startColor).lerp(entity.targetColor,eased);
+    setArrowColor(entity,entity.currentColor);
+    if(entity.label){
+      entity.label.visible=!entity.removing&&entity.targetProbability>=QS_LABEL_THRESHOLD;
+      entity.label.material.opacity=entity.label.visible?1:0;
+    }
+    if (entity.removing&&t>=1&&entity.currentLength<=0.002) {
+      disposeArrowEntity(entity);
+      qsArrows.delete(key);
+    }
+  });
+  if (qsComposer) qsComposer.render();
+  else qsRenderer.render(qsScene,qsCamera);
 }
 function resizeQSphere() {
   if (!qsOk) return;
   const r=document.getElementById('qs-cont').getBoundingClientRect();
-  qsCamera.aspect=r.width/r.height; qsCamera.updateProjectionMatrix();
-  qsRenderer.setSize(r.width-4,Math.max(80,r.height-36));
+  const width=Math.max(80,r.width-4), height=Math.max(80,r.height-36);
+  qsCamera.aspect=width/height;
+  qsCamera.updateProjectionMatrix();
+  qsRenderer.setSize(width,height,false);
+  if (qsComposer) qsComposer.setSize(width,height);
 }
 window.addEventListener('load',()=>setTimeout(initQSphere,150));
 
