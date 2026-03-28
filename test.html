@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QtorchX - The QNaF Engine</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
         *, *::before, *::after { box-sizing: border-box; }
@@ -34,15 +34,17 @@
             position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
             z-index: 100; width: 90%; max-width: 1000px;
             display: flex; justify-content: space-between; align-items: center;
-            background: rgba(10,10,12,0.6);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 12px 24px; border-radius: 50px;
+            background: rgba(8,8,12,0.45);
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255,255,255,0.16);
+            box-shadow: 0 28px 80px rgba(0,0,0,0.28);
+            padding: 14px 28px; border-radius: 56px;
         }
-        .brand { font-weight: 800; font-size: 1.1rem; letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px; }
-        .brand span { font-weight: 400; color: #888; font-size: 0.9rem; }
-        .nav-links { display: flex; gap: 32px; }
-        .nav-links a { color: #aaa; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: color 0.2s; }
+        .brand { font-weight: 900; font-size: 1.2rem; letter-spacing: -0.05em; display: flex; align-items: center; gap: 10px; color: #f4f4f4; }
+        .brand span { font-weight: 500; color: #adb6c5; font-size: 0.92rem; }
+        .nav-links { display: flex; gap: 36px; }
+        .nav-links a { color: #d3d6e1; text-decoration: none; font-size: 0.92rem; font-weight: 700; letter-spacing: 0.08em; transition: color 0.2s ease, transform 0.2s ease; }
+        .nav-links a:hover { color: #ffffff; transform: translateY(-1px); }
         .nav-links a:hover { color: #fff; }
  
         /* ── SNAP SCROLL ── */
@@ -72,9 +74,11 @@
  
         /* ── S1: HERO ── */
         .hero-title {
-            font-size: clamp(2.5rem, 5vw, 5.5rem);
-            font-weight: 800; letter-spacing: -0.04em; line-height: 1.05;
+            font-family: 'Space Grotesk', 'Inter', sans-serif;
+            font-size: clamp(2.8rem, 5vw, 6rem);
+            font-weight: 900; letter-spacing: -0.03em; line-height: 1.0;
             text-align: center; margin: 0; z-index: 2;
+            text-transform: none;
         }
         .inverse-text { color: #fff; mix-blend-mode: difference; }
         .gradient-text {
@@ -84,16 +88,117 @@
         }
         .hero-subtext {
             font-family: 'JetBrains Mono', monospace;
-            color: rgba(255,255,255,0.75);
-            max-width: 650px; text-align: center; margin-top: 2.5rem;
-            font-size: 0.9rem; line-height: 1.7; z-index: 2;
-            background: rgba(12,12,15,0.85);
-            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255,255,255,0.08);
-            padding: 24px 32px; border-radius: 8px;
+            color: rgba(255,255,255,0.9);
+            max-width: 650px; width: min(100%, 650px);
+            text-align: center; margin: 2.5rem auto 0;
+            font-size: 0.95rem; line-height: 1.75; z-index: 2;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.14);
+            padding: 24px 32px; border-radius: 16px;
         }
         .hero-subtext strong { color: #fff; font-weight: 700; }
- 
+
+        .hero-inner {
+            width: 100%;
+            max-width: 1100px;
+            padding: 0 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+            align-items: center;
+            justify-content: center;
+        }
+        .hero-meta {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            margin-top: 2.8rem;
+        }
+        .command-card,
+        .download-card {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 22px;
+            padding: 24px;
+            min-height: 170px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+        }
+        .command-card:hover,
+        .download-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255,255,255,0.22);
+            background: rgba(255,255,255,0.09);
+        }
+        .card-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: #d0d4dd;
+            margin-bottom: 16px;
+        }
+        .command-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 16px;
+            padding: 18px;
+        }
+        .command-row code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.05rem;
+            color: #ffffff;
+            word-break: break-word;
+        }
+        .copy-btn,
+        .download-btn {
+            border: none;
+            background: rgba(255,255,255,0.24);
+            color: #111;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            font-weight: 800;
+            padding: 14px 20px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .copy-btn:hover,
+        .download-btn:hover {
+            background: rgba(255,255,255,0.32);
+            transform: translateY(-1px);
+        }
+        .download-title {
+            font-family: 'Space Grotesk', 'Inter', sans-serif;
+            font-size: 1.14rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: #ffffff;
+            margin: 0;
+        }
+        .download-note {
+            color: #d8dade;
+            font-size: 0.88rem;
+            line-height: 1.75;
+            margin-top: 14px;
+        }
+        .highlight-red { color: #e74c3c; }
+        @media (max-width: 860px) {
+            .hero-meta { grid-template-columns: 1fr; }
+            .command-row { flex-direction: column; align-items: stretch; }
+            .copy-btn { width: 100%; }
+        }
+
         /* ══════════════════════════════════════════
            S2 LAYOUT — the trick:
  
@@ -155,7 +260,8 @@
         /* Arena absorbs all remaining vertical space */
         .arena {
             display: grid;
-            grid-template-columns: 1fr 42px 1fr;
+            grid-template-columns: 1.18fr 42px 1.18fr;
+            column-gap: 34px;
             width: 100%;
             flex: 1;        /* grow to fill */
             min-height: 0;  /* shrink below content if needed */
@@ -164,15 +270,16 @@
  
         /* Cards fill arena height, clip internally */
         .card {
-            border-radius: 14px;
-            padding: 18px 22px 16px;
+            height: 100%;
+            border-radius: 16px;
+            padding: 26px 28px 24px;
             display: flex;
             flex-direction: column;
             position: relative;
             overflow: hidden;
             min-height: 0;
-            background: rgba(10,10,13,0.75);
-            transition: border-color 0.4s ease;
+            background: rgba(12,12,16,0.82);
+            transition: border-color 0.4s ease, background-color 0.3s ease, transform 0.3s ease;
         }
         .card::before {
             content: '';
@@ -185,7 +292,21 @@
         .card-qtorch { border: 1px solid rgba(52,152,219,0.15); }
         .card-qtorch::before { background: linear-gradient(90deg,transparent,rgba(52,152,219,0.55),transparent); }
         .card-qtorch:hover { border-color: rgba(52,152,219,0.45); }
- 
+        .card:hover {
+            background: rgba(25,25,30,0.95);
+            transform: translateY(-2px);
+            border-color: rgba(255,255,255,0.18);
+        }
+        .card:hover .card-title,
+        .card:hover .card-title span {
+            color: #e6e6e6;
+            background: none;
+            -webkit-text-fill-color: initial;
+        }
+        .card:hover .card-desc { color: #e0e0e0; }
+        .card:hover .card-tag { color: #d1d1d1; }
+        .card:hover .vis-stage { border-color: rgba(255,255,255,0.16); }
+
         .card-tag {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.62rem; letter-spacing: 0.14em;
@@ -196,24 +317,27 @@
         .tag-blue { color: #3498db; }
  
         .card-title {
-            font-size: 1.2rem; font-weight: 700;
-            letter-spacing: -0.03em; line-height: 1.1;
+            font-family: 'Space Grotesk', 'Inter', sans-serif;
+            font-size: 1.28rem; font-weight: 700;
+            letter-spacing: -0.04em; line-height: 1.05;
             margin-bottom: 8px;
             flex-shrink: 0;
+            color: #dadada;
         }
         .title-red {
-            background: linear-gradient(110deg, #fff 0%, #e74c3c 55%, #90160a 100%);
+            background: linear-gradient(110deg, #f1f1f1 0%, #c5c5c5 55%, #9a9a9a 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block;
         }
         .title-blue {
-            background: linear-gradient(110deg, #fff 0%, #3498db 55%, #9b59b6 100%);
+            background: linear-gradient(110deg, #f3f3f3 0%, #b8b8b8 55%, #8f8f8f 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block;
         }
  
         /* Description: grows to push vis to bottom, clips rather than overflows card */
         .card-desc {
-            font-size: 0.79rem; color: #666; line-height: 1.65;
-            margin-bottom: 12px;
+            font-family: 'Space Grotesk', 'Inter', sans-serif;
+            font-size: 0.82rem; color: #c2c2c2; line-height: 1.7;
+            margin-bottom: 14px;
             flex: 1;
             min-height: 0;
             overflow: hidden;
@@ -223,12 +347,13 @@
         /* Vis stage: always 108px, never grows */
         .vis-stage {
             position: relative;
-            width: 100%; height: 108px;
+            width: 100%; height: 140px;
             background: #050507;
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
             overflow: hidden;
             flex-shrink: 0;
+            transition: border-color 0.3s ease, transform 0.3s ease;
         }
  
         /* Gate viz */
@@ -350,13 +475,32 @@
         
         <!-- ══ SECTION 1: HERO ══ -->
         <section class="section" id="hero">
-            <h1 class="hero-title">
-                <span class="inverse-text">You are modelling quantum noise</span><br>
-                <span class="gradient-text">the wrong way.</span>
-            </h1>
-            <p class="hero-subtext">
-                Introducing <strong>QNaF</strong>: A spatiotemporal formalism modeling environmental interactions as a differentiable latent field Φ(x,t) ∈ ℝᵈ. Simulate complex unitary dynamics and non-Markovian noise via GPU-accelerated stochastic differential equations.
-            </p>
+            <div class="hero-inner">
+                <div>
+                    <h1 class="hero-title">
+                        <span class="inverse-text">You are modelling quantum noise</span><br>
+                        <span class="gradient-text">the wrong way.</span>
+                    </h1>
+                    <p class="hero-subtext">
+                        Introducing <strong>QNaF</strong>: A spatiotemporal formalism modeling environmental interactions as a differentiable latent field Φ(x,t) ∈ ℝᵈ. Simulate complex unitary dynamics and non-Markovian noise via GPU-accelerated stochastic differential equations.
+                    </p>
+                    <div class="hero-meta">
+                        <div class="command-card">
+                            <p class="card-label">Install command</p>
+                            <div class="command-row">
+                                <code id="pip-command">pip install qtorchx</code>
+                                <button class="copy-btn" data-copy-text="pip install qtorchx">Copy</button>
+                            </div>
+                        </div>
+                        <div class="download-card">
+                            <p class="card-label">Download the brief</p>
+                            <p class="download-title">From Channels to <span class="highlight-red">Fields</span></p>
+                            <a class="download-btn" href="./From%20Channels%20to%20Fields%20-%20QNaF%20Formalism.pdf" download="QNaF-From-Channels-to-Fields.pdf">Download <span class="highlight-red">PDF</span></a>
+                            <p class="download-note">Minimal, modernist guide for moving from channels to fields.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <!-- ══ SECTION 2: REIMAGINED ══ -->
@@ -445,6 +589,24 @@
 
     </div><!-- /snap-container -->
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const copyBtn = document.querySelector('.copy-btn');
+            if (!copyBtn) return;
+            const defaultLabel = copyBtn.textContent;
+            copyBtn.addEventListener('click', async () => {
+                const text = copyBtn.dataset.copyText || document.getElementById('pip-command')?.textContent.trim();
+                if (!text) return;
+                try {
+                    await navigator.clipboard.writeText(text);
+                    copyBtn.textContent = 'Copied';
+                } catch (err) {
+                    copyBtn.textContent = 'Copy failed';
+                }
+                setTimeout(() => { copyBtn.textContent = defaultLabel; }, 1400);
+            });
+        });
+    </script>
 
     <!-- WebGL shader source -->
     <script type="x-shader/x-fragment" id="fs">
