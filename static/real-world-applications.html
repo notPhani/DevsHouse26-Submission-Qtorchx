@@ -151,8 +151,8 @@
         /* Application Grid */
         .app-grid {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 16px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
             width: 100%;
             flex: 1;
             min-height: 0;
@@ -163,13 +163,14 @@
             background: rgba(10,10,13,0.85);
             border: 1px solid rgba(52,152,219,0.15);
             border-radius: 14px;
-            padding: 24px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
             position: relative;
             overflow: hidden;
             transition: all 0.4s ease;
+            min-height: 240px;
         }
         .app-card::before {
             content: '';
@@ -244,7 +245,10 @@
         .app-card-desc strong { color: #ddd; font-weight: 600; }
 
         /* Single column layout for small screens */
-        @media (max-width: 900px) {
+        @media (max-width: 1200px) {
+            .app-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
             .app-grid { grid-template-columns: 1fr; }
         }
 
@@ -303,25 +307,24 @@
         <!-- ══ SECTION 1: HERO ══ -->
         <section class="section" id="hero">
             <h1 class="hero-title">
-                <span>Quantum Noise in</span><br>
-                <span class="gradient-text">the Real World.</span>
+                <span class="gradient-text">Real-World Applications of QNaF</span>
             </h1>
             <p class="hero-subtext">
-                QNaF enables practical quantum systems to model, mitigate, and learn from noise in production environments. From hardware optimization to error mitigation, these applications bridge theory and implementation.
+                QNaF models quantum noise as a dynamic field evolving across space and time, enabling realistic simulation, optimization, and better quantum system design.
             </p>
         </section>
 
-        <!-- ══ SECTION 2: APPLICATIONS GRID ══ -->
+        <!-- ══ SECTION 2: APPLICATIONS ══ -->
         <section class="section" id="applications">
             <div class="content-inner">
 
-                <p class="s-kicker">Use Case 01</p>
+                <p class="s-kicker">Real-World Applications</p>
                 <h2 class="s-title">
-                    <span class="dim">Quantum Hardware</span>
-                    <span class="s-title accent"> Optimization</span>
+                    <span class="dim">How QNaF Solves</span>
+                    <span class="s-title accent">Quantum Challenges</span>
                 </h2>
                 <p class="s-sub">
-                    Simulate device-specific noise profiles before calibration runs. <strong>Reduce T1/T2 characterization time by up to 60%.</strong>
+                    From device optimization to error correction, QNaF provides a unified, differentiable approach to understanding and managing quantum noise.
                 </p>
 
                 <div class="s-divider"></div>
@@ -329,229 +332,53 @@
                 <div class="app-grid">
 
                     <div class="app-card accent-1">
-                        <p class="app-card-tag tag-blue">Hardware Tuning</p>
-                        <h3 class="app-card-title"><span class="title-blue">Predictive Calibration</span></h3>
+                        <p class="app-card-tag tag-blue">Hardware Design</p>
+                        <h3 class="app-card-title"><span class="title-blue">Quantum Hardware Optimization</span></h3>
                         <p class="app-card-desc">
-                            Use QNaF's Φ-field manifold to predict optimal pulse parameters without exhaustive device sweeps. <strong>Feed hardware metrics into the SDE</strong> to forecast decoherence under different temperature and magnetic field conditions.
+                            Improve quantum device design by understanding how noise evolves across qubits and time.
                         </p>
                     </div>
 
                     <div class="app-card accent-2">
-                        <p class="app-card-tag tag-purple">Device Simulation</p>
-                        <h3 class="app-card-title"><span class="title-purple">Cross-Qubit Crosstalk</span></h3>
+                        <p class="app-card-tag tag-purple">Circuit Design</p>
+                        <h3 class="app-card-title"><span class="title-purple">Noise-Aware Algorithm Design</span></h3>
                         <p class="app-card-desc">
-                            Model spatially-correlated noise between adjacent qubits before deployment. <strong>QNaF's diffusion channel (Φ₁)</strong> captures real crosstalk without linearizing the interaction topology.
-                        </p>
-                    </div>
-
-                </div>
-
-            </div>
-        </section>
-
-        <!-- ══ SECTION 3: ERROR MITIGATION ══ -->
-        <section class="section" id="mitigation">
-            <div class="content-inner">
-
-                <p class="s-kicker">Use Case 02</p>
-                <h2 class="s-title">
-                    <span class="dim">Noise-Aware Algorithm</span>
-                    <span class="s-title accent"> Design</span>
-                </h2>
-                <p class="s-sub">
-                    Co-design quantum circuits with noise models. <strong>Adapt gates and entanglement patterns</strong> to minimize decoherence impact.
-                </p>
-
-                <div class="s-divider"></div>
-
-                <div class="app-grid">
-
-                    <div class="app-card accent-3">
-                        <p class="app-card-tag tag-green">Circuit Synthesis</p>
-                        <h3 class="app-card-title"><span class="title-green">Resilient Gate Sequences</span></h3>
-                        <p class="app-card-desc">
-                            Automatically choose gate decompositions that minimize noise accumulation. <strong>QNaF gradients guide the search</strong> for optimal sequences given device-specific noise distributions.
-                        </p>
-                    </div>
-
-                    <div class="app-card accent-1">
-                        <p class="app-card-tag tag-blue">Algorithm Adaptation</p>
-                        <h3 class="app-card-title"><span class="title-blue">Entanglement Strategy</span></h3>
-                        <p class="app-card-desc">
-                            Determine which qubits to entangle based on their noise correlation profile. <strong>Reduce circuit depth</strong> by leveraging non-Markovian memory (Φ₀) to reuse historical correlations instead of rebuilding them.
-                        </p>
-                    </div>
-
-                </div>
-
-            </div>
-        </section>
-
-        <!-- ══ SECTION 4: ERROR MITIGATION ══ -->
-        <section class="section" id="error-mitigation">
-            <div class="content-inner">
-
-                <p class="s-kicker">Use Case 03</p>
-                <h2 class="s-title">
-                    <span class="dim">Dynamic Error</span>
-                    <span class="s-title accent"> Mitigation</span>
-                </h2>
-                <p class="s-sub">
-                    <strong>Measure and suppress errors in real-time</strong> by learning noise patterns between circuit executions.
-                </p>
-
-                <div class="s-divider"></div>
-
-                <div class="app-grid">
-
-                    <div class="app-card accent-4">
-                        <p class="app-card-tag tag-red">Active Correction</p>
-                        <h3 class="app-card-title"><span class="title-red">Online Denoising</span></h3>
-                        <p class="app-card-desc">
-                            Extract the Φ-field from noisy measurement results. <strong>Incrementally update the DPM</strong> (Decoherence Probability Map) to track hardware drift across circuit batches and compensate proactively.
-                        </p>
-                    </div>
-
-                    <div class="app-card accent-2">
-                        <p class="app-card-tag tag-purple">Recovery</p>
-                        <h3 class="app-card-title"><span class="title-purple">Fidelity Recovery</span></h3>
-                        <p class="app-card-desc">
-                            Apply inverse noise channels learned from validation runs. <strong>Recover 15–25% fidelity improvement</strong> on shallow circuits by using QNaF's fully-differentiable noise model in post-processing.
-                        </p>
-                    </div>
-
-                </div>
-
-            </div>
-        </section>
-
-        <!-- ══ SECTION 5: REALISTIC SIMULATION ══ -->
-        <section class="section" id="realistic-sim">
-            <div class="content-inner">
-
-                <p class="s-kicker">Use Case 04</p>
-                <h2 class="s-title">
-                    <span class="dim">Realistic</span>
-                    <span class="s-title accent"> Simulation</span>
-                </h2>
-                <p class="s-sub">
-                    Test quantum algorithms on hardware-accurate noise without access to real quantum processors. <strong>Verify results before deployment.</strong>
-                </p>
-
-                <div class="s-divider"></div>
-
-                <div class="app-grid">
-
-                    <div class="app-card accent-1">
-                        <p class="app-card-tag tag-blue">Benchmarking</p>
-                        <h3 class="app-card-title"><span class="title-blue">Hardware Emulation</span></h3>
-                        <p class="app-card-desc">
-                            Import T1, T2, and gate error rates from your target quantum device. <strong>QNaF reproduces the full noise manifold</strong> including spatiotemporal correlations that traditional models miss.
+                            Build quantum circuits that avoid high-noise regions and improve computational accuracy.
                         </p>
                     </div>
 
                     <div class="app-card accent-3">
-                        <p class="app-card-tag tag-green">Validation</p>
-                        <h3 class="app-card-title"><span class="title-green">Algorithm Testing</span></h3>
+                        <p class="app-card-tag tag-green">Error Control</p>
+                        <h3 class="app-card-title"><span class="title-green">Error Mitigation & Correction</span></h3>
                         <p class="app-card-desc">
-                            Run QAOA, VQE, or Grover's algorithm on realistic noise. <strong>Validate convergence</strong> and identify algorithmic bottlenecks before committing time on real quantum hardware.
-                        </p>
-                    </div>
-
-                </div>
-
-            </div>
-        </section>
-
-        <!-- ══ SECTION 6: AI-BASED LEARNING ══ -->
-        <section class="section" id="ai-learning">
-            <div class="content-inner">
-
-                <p class="s-kicker">Use Case 05</p>
-                <h2 class="s-title">
-                    <span class="dim">AI-Based Noise</span>
-                    <span class="s-title accent"> Learning</span>
-                </h2>
-                <p class="s-sub">
-                    Train neural networks end-to-end through the noise manifold. <strong>Learn optimal circuits and error suppression strategies simultaneously.</strong>
-                </p>
-
-                <div class="s-divider"></div>
-
-                <div class="app-grid">
-
-                    <div class="app-card accent-2">
-                        <p class="app-card-tag tag-purple">Meta-Learning</p>
-                        <h3 class="app-card-title"><span class="title-purple">Variational Denoising</span></h3>
-                        <p class="app-card-desc">
-                            Use QNaF's differentiable Φ-field in variational quantum eigensolvers. <strong>Jointly optimize circuit ansätze and noise-adaptive parameters</strong> via backpropagation through the noise SDE.
+                            Predict how errors propagate and design better strategies to reduce them.
                         </p>
                     </div>
 
                     <div class="app-card accent-4">
-                        <p class="app-card-tag tag-red">Inversion</p>
-                        <h3 class="app-card-title"><span class="title-red">Noise Characterization</span></h3>
+                        <p class="app-card-tag tag-red">Simulation</p>
+                        <h3 class="app-card-title"><span class="title-red">Realistic Quantum Simulation</span></h3>
                         <p class="app-card-desc">
-                            Solve the inverse problem: given noisy outcomes, infer Φ-field channel strengths and coupling matrices. <strong>Build device models from limited measurement data</strong> using neural inverse mappings.
+                            Simulate real-device behavior before running on expensive quantum hardware.
                         </p>
                     </div>
 
-                </div>
-
-            </div>
-        </section>
-
-        <!-- ══ SECTION 7: RESEARCH INSIGHTS ══ -->
-        <section class="section" id="research">
-            <div class="content-inner">
-
-                <p class="s-kicker">Use Case 06</p>
-                <h2 class="s-title">
-                    <span class="dim">Research & Physics</span>
-                    <span class="s-title accent"> Insights</span>
-                </h2>
-                <p class="s-sub">
-                    <strong>Fundamental discovery:</strong> Investigate non-Markovian dynamics and quantum channels in controlled settings.
-                </p>
-
-                <div class="s-divider"></div>
-
-                <div class="app-grid">
-
-                    <div class="app-card accent-3">
-                        <p class="app-card-tag tag-green">Physics</p>
-                        <h3 class="app-card-title"><span class="title-green">channel Decomposition</span></h3>
+                    <div class="app-card accent-2">
+                        <p class="app-card-tag tag-purple">Characterization</p>
+                        <h3 class="app-card-title"><span class="title-purple">Noise Pattern Learning</span></h3>
                         <p class="app-card-desc">
-                            Decompose measured device noise into QNaF's six latent channels. <strong>Quantify non-Markovian persistence (Φ₀), spatial diffusion (Φ₁), and disturbance propagation (Φ₂)</strong> for any target device.
+                            Learn and store device-specific noise patterns as reusable noise fingerprints.
                         </p>
                     </div>
 
                     <div class="app-card accent-1">
-                        <p class="app-card-tag tag-blue">Analysis</p>
-                        <h3 class="app-card-title"><span class="title-blue">Field Structure</span></h3>
+                        <p class="app-card-tag tag-blue">Research</p>
+                        <h3 class="app-card-title"><span class="title-blue">Scientific Research & Physics</span></h3>
                         <p class="app-card-desc">
-                            Analyze how the Φ-field evolves under different circuit topologies. <strong>Discover fundamental relationships</strong> between spatial coupling graphs, chip geometry, and noise manifolds—advancing theoretical quantum information.
+                            Study advanced quantum phenomena like non-Markovian noise and environmental interactions.
                         </p>
                     </div>
 
-                </div>
-
-                <div class="stat-row" style="margin-top: 20px;">
-                    <div class="stat-card">
-                        <p class="stat-label">Impact</p>
-                        <p class="stat-value" style="font-size: 0.85rem;">6 Coupled Channels</p>
-                        <p class="stat-note">Complete spatiotemporal noise capture — no Markovian approximation.</p>
-                    </div>
-                    <div class="stat-card">
-                        <p class="stat-label">Advantage</p>
-                        <p class="stat-value" style="font-size: 0.85rem;">Fully Differentiable</p>
-                        <p class="stat-note">Gradients flow end-to-end for circuit and noise co-optimization.</p>
-                    </div>
-                    <div class="stat-card">
-                        <p class="stat-label">Scale</p>
-                        <p class="stat-value" style="font-size: 0.85rem;">GPU-Accelerated</p>
-                        <p class="stat-note">Simulate 100+ qubits and deep circuits on standard PyTorch infrastructure.</p>
-                    </div>
                 </div>
 
             </div>
