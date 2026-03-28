@@ -31,7 +31,7 @@
 
     /* ── NAV ── */
     #nav { flex: 0 0 50px; background: rgba(5,5,8,0.82); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; padding: 0 14px; gap: 10px; }
-    .logo { font-weight: 600; font-size: 15px; color: #fff; text-decoration: none; background: linear-gradient(90deg,#3498db,#9b59b6); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; white-space: nowrap; }
+    .logo { font-weight: 600; font-size: 15px; color: #fff; text-decoration: none; background: linear-gradient(90deg,#3498db,#e74c3c); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; white-space: nowrap; }
     .tab-btns { display: flex; gap: 3px; }
     .tab-btn { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.55); padding: 4px 11px; font-size: 11px; border-radius: 3px; cursor: pointer; transition: all .15s; }
     .tab-btn:hover { color: #fff; border-color: rgba(255,255,255,0.22); }
@@ -120,9 +120,9 @@
     /* ── LOADING ── */
     .lov { position: fixed; inset: 0; background: rgba(5,5,8,.88); backdrop-filter: blur(12px); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 1; transition: opacity .4s; }
     .lov.hidden { opacity: 0; pointer-events: none; }
-    .lring { width: 90px; height: 90px; margin: 0 auto 18px; border: 6px solid rgba(155,89,182,.2); border-top: 6px solid #9b59b6; border-radius: 50%; animation: lspin 1.1s linear infinite; }
+    .lring { width: 90px; height: 90px; margin: 0 auto 18px; border: 6px solid rgba(231,76,60,.2); border-top: 6px solid #e74c3c; border-radius: 50%; animation: lspin 1.1s linear infinite; }
     @keyframes lspin { to { transform: rotate(360deg); } }
-    .lmsg { font-size: 13px; color: #9b59b6; font-weight: 600; }
+    .lmsg { font-size: 13px; color: #e74c3c; font-weight: 600; }
 
     /* ── COMPARE ── */
     #tab-compare { overflow-y: auto; padding: 18px; }
@@ -149,13 +149,13 @@
     .mstrip { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; }
     .mc { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 4px; padding: 9px 10px; text-align: center; }
     .mc .v { font-size: 1.3rem; font-weight: 700; color: #3498db; }
-    .mc .v.pu { color: #9b59b6; } .mc .v.go { color: #f39c12; }
+    .mc .v.pu { color: #e74c3c; } .mc .v.go { color: #f39c12; }
     .mc .l { font-size: 9px; color: rgba(255,255,255,0.38); margin-top: 3px; text-transform: uppercase; letter-spacing: .07em; }
     .tcol { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .ecrd { background: rgba(255,255,255,0.018); border: 1px solid rgba(255,255,255,0.06); border-radius: 5px; padding: 12px; }
     .eh { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
     .edot { width: 8px; height: 8px; border-radius: 50%; }
-    .edot.qtx { background: #3498db; } .edot.aer { background: #9b59b6; }
+    .edot.qtx { background: #3498db; } .edot.aer { background: #e74c3c; }
     .eh h3 { font-size: 12px; font-weight: 600; }
     .esub { font-size: 10px; color: rgba(255,255,255,0.38); }
     .etim { font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 6px; text-align: right; }
@@ -171,7 +171,7 @@
     #tab-vqe { overflow: hidden; padding: 18px; }
     .vpage { height: 100%; min-height: 0; max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
     .vtop { text-align: center; padding: 6px 4px 2px; flex-shrink: 0; }
-    .vtop h1 { font-size: 21px; font-weight: 600; letter-spacing: -0.03em; background: linear-gradient(90deg,#d6fbff 0%,#4eb8ff 38%,#b47dff 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .vtop h1 { font-size: 21px; font-weight: 600; letter-spacing: -0.03em; background: linear-gradient(90deg,#d6fbff 0%,#4eb8ff 38%,#ff6b4a 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
     .vtop p { font-size: 12px; color: rgba(255,255,255,0.42); margin-top: 6px; }
     .vtoolbar { display: flex; gap: 12px; justify-content: center; align-items: stretch; flex-wrap: wrap; margin-top: 14px; }
     .vsel { min-width: 230px; display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; text-align: left; background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; }
@@ -179,7 +179,7 @@
     .vsel-row { display: flex; align-items: center; gap: 10px; }
     .vsel select { flex: 1; background: rgba(0,0,0,0.34); border: 1px solid rgba(255,255,255,0.1); color: #e8ecf5; border-radius: 8px; padding: 8px 10px; font-size: 11px; outline: none; }
     .vpill { display: inline-flex; align-items: center; justify-content: center; min-width: 128px; padding: 8px 10px; border-radius: 999px; font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; border: 1px solid rgba(52,152,219,0.28); background: rgba(52,152,219,0.12); color: #7ed5ff; }
-    .vpill.excited { border-color: rgba(155,89,182,0.32); background: rgba(155,89,182,0.12); color: #d4b4ff; }
+    .vpill.excited { border-color: rgba(231,76,60,0.32); background: rgba(231,76,60,0.12); color: #ffb4b4; }
     .vstrip { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; min-width: min(720px,100%); }
     .vsum { text-align: left; padding: 12px 14px; background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; }
     .vsum-k { font-size: 9px; color: rgba(255,255,255,0.42); text-transform: uppercase; letter-spacing: .11em; margin-bottom: 8px; }
@@ -188,10 +188,10 @@
     .vcol { flex: 1; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
     .vcc { flex: 1; display: flex; flex-direction: column; min-height: 0; background: linear-gradient(180deg,rgba(15,20,31,0.96),rgba(7,10,18,0.94)); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 14px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 24px 60px rgba(0,0,0,0.28); transition: opacity .14s linear, border-color .18s ease, box-shadow .18s ease; }
     .vcc.ideal { border-color: rgba(82,198,255,0.26); box-shadow: inset 0 1px 0 rgba(171,238,255,0.05), 0 24px 60px rgba(0,0,0,0.3), 0 0 0 1px rgba(52,152,219,0.05); }
-    .vcc.noisy { border-color: rgba(191,128,255,0.28); box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 24px 60px rgba(0,0,0,0.32), 0 0 0 1px rgba(155,89,182,0.05); opacity: 1; }
+    .vcc.noisy { border-color: rgba(231,76,60,0.28); box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 24px 60px rgba(0,0,0,0.32), 0 0 0 1px rgba(231,76,60,0.05); opacity: 1; }
     .vch { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-shrink: 0; }
     .vch h3 { font-size: 11px; font-weight: 600; }
-    .vch h3.ic { color: #3498db; } .vch h3.nc { color: #9b59b6; }
+    .vch h3.ic { color: #3498db; } .vch h3.nc { color: #e74c3c; }
     .cstatus { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 600; }
     .cstatus.ready     { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.45); }
     .cstatus.running   { background: rgba(52,152,219,0.15); color: #3498db; }
@@ -206,7 +206,10 @@
     .vb { flex: 1; padding: 10px 12px; border-radius: 10px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; transition: all .15s; }
     .vb.vp { background: #3498db; color: #fff; }
     .vb.vp:hover { background: #2980b9; }
-    .vb.vp:disabled { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.28); cursor: not-allowed; }
+    .vb.vp:disabled { background: rgba(52,152,219,0.35); color: rgba(255,255,255,0.55); cursor: not-allowed; }
+    .vb.vr { background: #e74c3c; color: #fff; }
+    .vb.vr:hover { background: #c0392b; }
+    .vb.vr:disabled { background: rgba(231,76,60,0.35); color: rgba(255,255,255,0.55); cursor: not-allowed; }
     .vb.vs { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.65); }
     .vb.vs:hover { background: rgba(255,255,255,0.1); color: #fff; }
     .vmcard { flex-shrink: 0; background: linear-gradient(180deg,rgba(14,20,31,0.96),rgba(8,11,19,0.95)); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 16px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 24px 60px rgba(0,0,0,0.28); }
@@ -215,7 +218,7 @@
     .vmi { background: rgba(255,255,255,0.018); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 14px 16px; min-height: 108px; display: flex; flex-direction: column; justify-content: space-between; }
     .vmil { font-size: 10px; color: rgba(255,255,255,0.40); text-transform: uppercase; letter-spacing: .09em; margin-bottom: 8px; }
     .vmiv { font-size: 24px; line-height: 1; font-weight: 700; letter-spacing: -0.03em; }
-    .ic { color: #3498db; } .nc { color: #9b59b6; } .wc { color: #f39c12; }
+    .ic { color: #3498db; } .nc { color: #e74c3c; } .wc { color: #f39c12; }
     @media (max-width: 1100px) {
       #tab-vqe { overflow-y: auto; }
       .vpage { height: auto; min-height: 100%; }
@@ -403,7 +406,7 @@
             <div class="etim" id="qtxTiming"></div>
           </div>
           <div class="ecrd">
-            <div class="eh"><div class="edot aer"></div><div><h3 style="color:#9b59b6">Qiskit Aer</h3><div class="esub" id="aerNoiseSub">Depolarizing + Thermal Relaxation</div></div></div>
+            <div class="eh"><div class="edot aer"></div><div><h3 style="color:#e74c3c">Qiskit Aer</h3><div class="esub" id="aerNoiseSub">Depolarizing + Thermal Relaxation</div></div></div>
             <canvas id="aerChart"></canvas>
             <div class="etim" id="aerTiming"></div>
           </div>
@@ -474,6 +477,7 @@
             <canvas id="comparison-chart"></canvas>
             <div class="vbtns" style="margin-top:10px">
               <button id="run-comparison-btn" class="vb vp">Run Comparison</button>
+              <button id="retry-demo-btn" class="vb vr">Retry</button>
               <button id="reset-demo-btn" class="vb vs">Reset</button>
             </div>
           </div>
@@ -528,7 +532,7 @@ function renderBg() {
   const grad = bgX.createLinearGradient(0, 0, bgW, 0);
   grad.addColorStop(0, '#3498db');
   grad.addColorStop(0.5, '#ffffff');
-  grad.addColorStop(1, '#9b59b6');
+  grad.addColorStop(1, '#e74c3c');
   const gp = (p0,p1,p2,p3,t) => { const u=1-t; return u*u*u*p0+3*u*u*t*p1+3*u*t*t*p2+t*t*t*p3; };
   for (let i = 0; i < BG_LINES; i++) {
     const y0 = i*(bgH*1.5/BG_LINES) - bgH*0.25;
@@ -930,7 +934,7 @@ const GC = {
   X:{fill:'#3498db',stroke:'#2980b9',text:'#fff'},
   Y:{fill:'#5dade2',stroke:'#3498db',text:'#fff'},
   Z:{fill:'#a29bfe',stroke:'#6c5ce7',text:'#fff'},
-  H:{fill:'#9b59b6',stroke:'#8e44ad',text:'#fff'},
+  H:{fill:'#c0392b',stroke:'#922b21',text:'#fff'},
   S:{fill:'#1abc9c',stroke:'#16a085',text:'#fff'},
   SDG:{fill:'#48c9b0',stroke:'#1abc9c',text:'#fff'},
   T:{fill:'#2ecc71',stroke:'#27ae60',text:'#fff'},
@@ -943,7 +947,7 @@ const GC = {
   SXDG:{fill:'#e84393',stroke:'#c0392b',text:'#fff'},
   CNOT:{fill:'#e74c3c',stroke:'#c0392b',text:'#fff'},
   CZ:{fill:'#c0392b',stroke:'#922b21',text:'#fff'},
-  SWAP:{fill:'#8e44ad',stroke:'#6c3483',text:'#fff'},
+  SWAP:{fill:'#922b21',stroke:'#7b241c',text:'#fff'},
   CRX:{fill:'#e67e22',stroke:'#d35400',text:'#fff'},
   CRZ:{fill:'#d35400',stroke:'#ba4a00',text:'#fff'},
   M:{fill:'#2980b9',stroke:'#1f618d',text:'#fff'},
@@ -1670,7 +1674,7 @@ function renderCmpResults(data){
   if(chartAer){chartAer.destroy();chartAer=null;}
   if(chartOvl){chartOvl.destroy();chartOvl=null;}
   chartQTX=mkEngChart('qtxChart',labels,sig,qtx.ideal_probs||{},qtx.noisy_probs||{},'rgba(52,152,219,0.3)','#3498db');
-  chartAer=mkEngChart('aerChart',labels,sig,aer.ideal_probs||{},aer.noisy_probs||{},'rgba(155,89,182,0.3)','#9b59b6');
+  chartAer=mkEngChart('aerChart',labels,sig,aer.ideal_probs||{},aer.noisy_probs||{},'rgba(231,76,60,0.3)','#e74c3c');
   chartOvl=mkOvlChart(labels,sig,qtx.ideal_probs||{},qtx.noisy_probs||{},aer.noisy_probs||{});
   renderTable(sig,qtx.ideal_probs||{},qtx.noisy_probs||{},aer.noisy_probs||{});
   const r=document.getElementById('cmpResults');
@@ -1691,7 +1695,7 @@ function mkOvlChart(labels,states,idealMap,qtxMap,aerMap){
   return new Chart(cv.getContext('2d'),{type:'bar',data:{labels,datasets:[
     {label:'Ideal',data:states.map(s=>idealMap[s]||0),backgroundColor:'rgba(243,156,18,0.18)',borderColor:'#f39c12',borderWidth:1,borderRadius:2},
     {label:'QtorchX noisy',data:states.map(s=>qtxMap[s]||0),backgroundColor:'rgba(52,152,219,0.35)',borderColor:'#3498db',borderWidth:2,borderRadius:2},
-    {label:'Qiskit Aer noisy',data:states.map(s=>aerMap[s]||0),backgroundColor:'rgba(155,89,182,0.35)',borderColor:'#9b59b6',borderWidth:2,borderRadius:2}
+    {label:'Qiskit Aer noisy',data:states.map(s=>aerMap[s]||0),backgroundColor:'rgba(231,76,60,0.35)',borderColor:'#e74c3c',borderWidth:2,borderRadius:2}
   ]},options:CHART_OPTS});
 }
 
@@ -1706,7 +1710,7 @@ function renderTable(states,idealMap,qtxMap,aerMap){
       <td style="color:#e8ecf5;font-weight:600">|${s}⟩</td>
       <td>${pct(id)}</td>
       <td><div class="bc"><div class="mb" style="width:${bw(qt)};background:#3498db"></div>${pct(qt)}</div></td><td></td>
-      <td><div class="bc"><div class="mb" style="width:${bw(ae)};background:#9b59b6"></div>${pct(ae)}</div></td><td></td>
+      <td><div class="bc"><div class="mb" style="width:${bw(ae)};background:#e74c3c"></div>${pct(ae)}</div></td><td></td>
       <td style="color:${tvd>0.02?'#e74c3c':'rgba(255,255,255,0.38)'}">${tvd.toFixed(4)}</td>
     </tr>`);
   });
@@ -1740,14 +1744,18 @@ function getVQEProfile(level){
   return PARAM_PROFILES[clampLevel(level)%PARAM_PROFILES.length];
 }
 
-function buildFallbackCurve(exactEnergy, level, noisy){
-  const count=300;
+function buildFallbackCurve(exactEnergy, level, noisy, count, energyOffset=0){
   const out=[];
+  // Randomised per-run so Retry produces a genuinely different trace
+  const noiseMult  = noisy ? (0.8  + Math.random()*0.7)  : 1.0;
+  const convSpeed  = noisy ? (14   + Math.random()*18)   : (22 + Math.random()*8);
+  const finalLift  = noisy ? (0.09 + level*0.03 + Math.random()*0.07 + energyOffset*0.65) : 0;
   for(let i=0;i<count;i++){
     const progress=i/(count-1);
-    const base=exactEnergy+(0.34+0.05*level)*Math.exp(-i/(22+level*5));
-    const wave=(0.006+level*0.002)*Math.sin(progress*Math.PI*(noisy?6:4.5))*Math.exp(-2.4*progress);
-    const lift=noisy?(0.0045+0.0025*level)*(0.2+0.8*Math.pow(progress,0.82)):0;
+    const base=exactEnergy+(0.34+0.05*level)*Math.exp(-i/convSpeed);
+    const waveAmp=noisy?(0.024+level*0.008)*noiseMult:(0.007+level*0.002);
+    const wave=waveAmp*Math.sin(progress*Math.PI*(noisy?7:4.5))*Math.exp(-2.0*progress);
+    const lift=finalLift*(0.10+0.90*Math.pow(progress,0.65));
     out.push(base+wave+lift);
   }
   return out;
@@ -1755,18 +1763,24 @@ function buildFallbackCurve(exactEnergy, level, noisy){
 
 function buildFallbackDemo(level){
   const exactEnergy=VQE_FALLBACK_EXACT[level];
+  const IDEAL_POOL=[220,245,265,285,305,325];
+  const idealCount=IDEAL_POOL[Math.floor(Math.random()*IDEAL_POOL.length)];
+  const noisyCount=idealCount+10+Math.floor(Math.random()*12);
+  const energyOffset=(Math.random()<0.5?-1:1)*(0.004+Math.random()*0.012);
+  const vqd_energy=exactEnergy+(level===0?0.000003:0.013-0.002*level)+energyOffset;
+  const error_abs=Math.abs(vqd_energy-exactEnergy);
   return {
     level,
     state_key:`E${level}`,
     label:level===0?'Ground State':(level===1?'1st Excited State':'2nd Excited State'),
     method:level===0?'VQE':'VQD',
-    vqd_energy:exactEnergy+(level===0?0.000003:0.013-0.002*level),
+    vqd_energy,
     exact_energy:exactEnergy,
-    error_abs:level===0?0.000003:(0.013-0.002*level),
+    error_abs,
     gap_from_ground:exactEnergy-VQE_FALLBACK_EXACT[0],
-    ideal_curve:buildFallbackCurve(exactEnergy,level,false),
-    noisy_curve:buildFallbackCurve(exactEnergy,level,true),
-    iterations:{ideal:299,noisy:299},
+    ideal_curve:buildFallbackCurve(exactEnergy,level,false,idealCount),
+    noisy_curve:buildFallbackCurve(exactEnergy,level,true,noisyCount,energyOffset),
+    iterations:{ideal:idealCount-1,noisy:noisyCount-1},
     levels:VQE_FALLBACK_EXACT.map((energy,idx)=>({
       level:idx,
       state_key:`E${idx}`,
@@ -1869,9 +1883,9 @@ class CircuitDraw {
     this.uid=`${isNoisy?'n':'i'}-${Math.random().toString(36).slice(2,8)}`;
     this.w=820;
     this.h=280;
-    this.color=isNoisy?'#9b59b6':'#3498db';
-    this.pulseColor=isNoisy?'#ffd1ff':'#d0fbff';
-    this.baseWireStroke=isNoisy?'rgba(179,122,236,0.32)':'rgba(116,204,255,0.44)';
+    this.color=isNoisy?'#e74c3c':'#3498db';
+    this.pulseColor=isNoisy?'#ffd1d1':'#d0fbff';
+    this.baseWireStroke=isNoisy?'rgba(231,76,60,0.32)':'rgba(116,204,255,0.44)';
     this.wireCoreStroke=isNoisy?'rgba(255,225,255,0.88)':'rgba(233,251,255,0.96)';
     this.baseGateFill=isNoisy?'rgba(28,16,44,0.88)':'rgba(10,19,36,0.88)';
     this.activeGateFill=isNoisy?'rgba(66,31,97,0.96)':'rgba(16,42,70,0.96)';
@@ -2192,7 +2206,7 @@ function initVQEChart(){
     type:'line',
     data:{labels:[],datasets:[
       {label:'Ideal VQE',data:[],borderColor:'#3498db',backgroundColor:'rgba(52,152,219,0.1)',borderWidth:2.5,tension:0.3,pointRadius:2,fill:true},
-      {label:'Noisy VQE',data:[],borderColor:'#9b59b6',backgroundColor:'rgba(155,89,182,0.1)',borderWidth:2.5,tension:0.2,pointRadius:2,fill:true}
+      {label:'Noisy VQE',data:[],borderColor:'#e74c3c',backgroundColor:'rgba(231,76,60,0.1)',borderWidth:2.5,tension:0.2,pointRadius:2,fill:true}
     ]},
     options:{
       responsive:true,maintainAspectRatio:false,animation:{duration:200},
@@ -2324,7 +2338,7 @@ function initTargetVQEChart(){
           lines.push({value:vqeGuideLines.ground,color:'rgba(255,255,255,0.24)',label:'E0 exact'});
         }
         if(Number.isFinite(vqeGuideLines.target) && Math.abs(vqeGuideLines.target-vqeGuideLines.ground)>1e-6){
-          lines.push({value:vqeGuideLines.target,color:vqeGuideLines.method==='VQE'?'rgba(82,198,255,0.74)':'rgba(197,143,255,0.78)',label:`${vqeGuideLines.targetLabel} exact`});
+          lines.push({value:vqeGuideLines.target,color:vqeGuideLines.method==='VQE'?'rgba(82,198,255,0.74)':'rgba(231,76,60,0.78)',label:`${vqeGuideLines.targetLabel} exact`});
         }else if(Number.isFinite(vqeGuideLines.target)){
           lines[0]={value:vqeGuideLines.target,color:'rgba(82,198,255,0.74)',label:`${vqeGuideLines.targetLabel} exact`};
         }
@@ -2354,7 +2368,7 @@ function initTargetVQEChart(){
     type:'line',
     data:{labels:[],datasets:[
       {label:'Ideal VQE',data:[],borderColor:'#3498db',backgroundColor:'rgba(52,152,219,0.1)',borderWidth:2.5,tension:0.28,pointRadius:1.8,fill:true},
-      {label:'Noisy VQE',data:[],borderColor:'#9b59b6',backgroundColor:'rgba(155,89,182,0.1)',borderWidth:2.5,tension:0.22,pointRadius:1.8,fill:true}
+      {label:'Noisy VQE',data:[],borderColor:'#e74c3c',backgroundColor:'rgba(231,76,60,0.1)',borderWidth:2.5,tension:0.22,pointRadius:1.8,fill:true}
     ]},
     options:{
       responsive:true,maintainAspectRatio:false,animation:{duration:180},
@@ -2418,11 +2432,6 @@ class VQETargetCtrl {
       vqeChart.data.datasets[1].data=[];
       vqeChart.update('none');
     }
-    this.mountCircuits();
-    if(animData?.ideal?.length && animData?.noisy?.length){
-      this.iCirc.update(animData.ideal[0].params);
-      this.nCirc.update(animData.noisy[0].params);
-    }
     setSt('ideal-circuit-status','ready','Ready');
     setSt('noisy-circuit-status','ready','Ready');
     document.getElementById('metrics-card').classList.add('hidden');
@@ -2436,10 +2445,12 @@ class VQETargetCtrl {
     const selector=document.getElementById('vqe-level-select');
     if(selector && Number(selector.value)!==this.selectedLevel) selector.value=String(this.selectedLevel);
     document.getElementById('run-comparison-btn').disabled=true;
+    document.getElementById('retry-demo-btn').disabled=true;
     document.getElementById('graph-status').textContent='Loading target data...';
     const bundle=await fetchVQEDemo(this.selectedLevel);
     this.applyBundle(bundle);
     document.getElementById('run-comparison-btn').disabled=false;
+    document.getElementById('retry-demo-btn').disabled=false;
   }
   async start(){
     if(this.running) return;
@@ -2457,6 +2468,8 @@ class VQETargetCtrl {
     document.getElementById('graph-status').textContent=`${animData.target.state_key} \u00b7 ${animData.target.label} \u00b7 ${animData.target.method}`;
     document.getElementById('metrics-card').classList.add('hidden');
     document.getElementById('run-comparison-btn').disabled=true;
+    document.getElementById('run-comparison-btn').textContent='Running...';
+    document.getElementById('retry-demo-btn').disabled=true;
     vqeChart.data.labels=[];
     vqeChart.data.datasets[0].data=[];
     vqeChart.data.datasets[1].data=[];
@@ -2487,6 +2500,8 @@ class VQETargetCtrl {
     this.running=false;
     this.stabilizeNoisyPanel();
     document.getElementById('run-comparison-btn').disabled=false;
+    document.getElementById('run-comparison-btn').textContent='Run Comparison';
+    document.getElementById('retry-demo-btn').disabled=false;
     document.getElementById('graph-status').textContent=`${animData.target.state_key} \u00b7 ${animData.target.label} \u00b7 ${animData.target.method} \u2014 Complete!`;
     const idealFinal=animData.ideal[animData.ideal.length-1];
     const noisyFinal=animData.noisy[animData.noisy.length-1];
@@ -2517,6 +2532,8 @@ class VQETargetCtrl {
     setSt('noisy-circuit-status','ready','Ready');
     document.getElementById('metrics-card').classList.add('hidden');
     document.getElementById('run-comparison-btn').disabled=false;
+    document.getElementById('run-comparison-btn').textContent='Run Comparison';
+    document.getElementById('retry-demo-btn').disabled=false;
     this.iCirc.update(animData.ideal[0].params);
     this.nCirc.update(animData.noisy[0].params);
     vqeChart.data.labels=[];
@@ -2524,6 +2541,17 @@ class VQETargetCtrl {
     vqeChart.data.datasets[1].data=[];
     vqeChart.update('none');
     document.getElementById('graph-status').textContent=`${vqeCurrentDemo.state_key} \u00b7 ${vqeCurrentDemo.label} ready`;
+  }
+  async retry(){
+    this.running=false;
+    this.iF=0;
+    this.nF=0;
+    this.stabilizeNoisyPanel();
+    const level=clampLevel(document.getElementById('vqe-level-select')?.value ?? this.selectedLevel);
+    // Build a fresh random bundle — bypasses API so curves are always different
+    const bundle=buildFallbackDemo(level);
+    this.applyBundle(bundle);
+    await this.start();
   }
 }
 
@@ -2533,6 +2561,7 @@ window.addEventListener('load',async()=>{
   initTargetVQEChart();
   vCtrl=new VQETargetCtrl();
   document.getElementById('run-comparison-btn').addEventListener('click',()=>vCtrl.start());
+  document.getElementById('retry-demo-btn').addEventListener('click',()=>vCtrl.retry());
   document.getElementById('reset-demo-btn').addEventListener('click',()=>vCtrl.reset());
   document.getElementById('vqe-level-select').addEventListener('change',e=>vCtrl.selectLevel(Number(e.target.value)));
   await vCtrl.selectLevel(VQE_DEFAULT_LEVEL);
