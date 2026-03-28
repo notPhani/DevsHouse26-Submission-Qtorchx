@@ -78,6 +78,7 @@
         /* ── S1: HERO ── */
         .hero-title {
             font-size: clamp(2.5rem, 5vw, 5.5rem);
+            padding: 82px 32px 18px;
             font-weight: 800; letter-spacing: -0.04em; line-height: 1.05;
             text-align: center; margin: 0; z-index: 2;
         }
@@ -89,7 +90,7 @@
         }
         .hero-subtext {
             font-family: 'JetBrains Mono', monospace;
-            color: rgba(255,255,255,0.75);
+            color: rgba(255,255,255,0.67);
             max-width: 650px; text-align: center; margin-top: 2.5rem;
             font-size: 0.9rem; line-height: 1.7; z-index: 2;
             background: rgba(12,12,15,0.85);
@@ -97,7 +98,7 @@
             border: 1px solid rgba(255,255,255,0.08);
             padding: 24px 32px; border-radius: 8px;
         }
-        .hero-subtext strong { color: #fff; font-weight: 700; }
+        .hero-subtext strong { color: rgba(255, 255, 255, 0.85); font-weight: 700; }
 
         .hero-grid {
             display: grid;
@@ -107,14 +108,26 @@
             margin-top: 2.5rem;
         }
         .hero-box {
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 18px;
+            background: rgba(10,10,13,0.85);
+            border: 1px solid rgba(52,152,219,0.15);
+            border-radius: 14px;
             padding: 24px;
             display: flex;
             flex-direction: column;
             gap: 16px;
             min-height: 220px;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.4s ease;
+        }
+        .hero-box:hover {
+            border-color: rgba(52,152,219,0.45);
+        }
+        .hero-box::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 10%; right: 10%; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(52,152,219,0.55), transparent);
         }
         .hero-box-head {
             font-size: 0.92rem;
@@ -142,8 +155,16 @@
             white-space: nowrap;
         }
         .copy-btn {
-            background: linear-gradient(90deg, #3498db, #9b59b6);
-            border: none;
+            /* The Purple to Blue Glass Base */
+            background: linear-gradient(90deg, rgba(52, 152, 219, 0.15), rgba(155, 89, 182, 0.15));
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            
+            /* The Glass Edges & Depth */
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+
+            /* Typography & Spacing (Kept from your original) */
             color: #fff;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.82rem;
@@ -152,9 +173,22 @@
             padding: 12px 18px;
             border-radius: 999px;
             cursor: pointer;
-            transition: transform 0.2s ease, opacity 0.2s ease;
+            transition: all 0.3s ease; /* Changed to 'all' to animate the glow and border */
         }
-        .copy-btn:hover { transform: translateY(-1px); opacity: 0.95; }
+
+        /* The Hover Glow-Up */
+        .copy-btn:hover {
+            background: linear-gradient(90deg, rgba(52, 152, 219, 0.25), rgba(155, 89, 182, 0.25));
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(155, 89, 182, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        /* Optional: Active/Click State */
+        .copy-btn:active {
+            transform: translateY(0px);
+            background: linear-gradient(90deg, rgba(52, 152, 219, 0.3), rgba(155, 89, 182, 0.3));
+        }
         .copy-feedback {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.78rem;
@@ -169,24 +203,46 @@
             flex: 1;
         }
         .pdf-card-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: fit-content;
-            background: linear-gradient(90deg, #fff, #3498db);
-            color: #111;
+            /* The Purple to Blue Glass Base */
+            background: linear-gradient(90deg, rgba(52, 152, 219, 0.15), rgba(155, 89, 182, 0.15));
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            
+            /* The Glass Edges & Depth */
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+
+            /* Typography & Spacing (Kept from your original) */
+            color: #fff;
+            font-family: 'JetBrains Mono', monospace;
             text-decoration: none;
+            font-size: 0.82rem;
             font-weight: 700;
-            padding: 12px 20px;
+            letter-spacing: 0.08em;
+            padding: 12px 18px;
             border-radius: 999px;
-            transition: opacity 0.2s ease;
+            cursor: pointer;
+            transition: all 0.3s ease; /* Changed to 'all' to animate the glow and border */
         }
-        .pdf-card-link:hover { opacity: 0.92; }
+
+        /* The Hover Glow-Up */
+        .pdf-card-link:hover {
+            background: linear-gradient(90deg, rgba(52, 152, 219, 0.25), rgba(155, 89, 182, 0.25));
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(155, 89, 182, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        /* Optional: Active/Click State */
+        .pdf-card-link:active {
+            transform: translateY(0px);
+            background: linear-gradient(90deg, rgba(52, 152, 219, 0.3), rgba(155, 89, 182, 0.3));
+        }
 
         @media (max-width: 900px) {
             .hero-grid { grid-template-columns: 1fr; }
             .install-box { flex-direction: column; align-items: stretch; }
-            .copy-btn { width: 100%; }
+            .pdf-card-link{ width: 100%; }
         }
 
         /* ══════════════════════════════════════════
@@ -233,7 +289,7 @@
         }
         .s2-sub {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.73rem; color: #999;
+            font-size: 0.73rem; color: #bbb;
             max-width: 500px; line-height: 1.6;
             text-align: center; margin-bottom: 10px;
             flex-shrink: 0;
@@ -266,7 +322,7 @@
             position: relative;
             overflow: hidden;
             min-height: 0;
-            background: rgba(10,10,13,0.75);
+            background: rgba(10,10,13,0.85);
             transition: border-color 0.4s ease;
         }
         .card::before {
@@ -401,14 +457,14 @@
         .stat-label {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.58rem; letter-spacing: 0.1em;
-            color: #777; text-transform: uppercase;
+            color: #aaa; text-transform: uppercase;
         }
         .stat-value {
             font-size: 0.95rem; font-weight: 800; letter-spacing: -0.03em;
             background: linear-gradient(90deg,#fff 0%,#3498db 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-        .stat-note { font-size: 0.68rem; color: #888; line-height: 1.45; }
+        .stat-note { font-size: 0.68rem; color: #bbb; line-height: 1.45; }
  
         /* ── S3 / S4 SHARED INNER ── */
         .s3-inner, .s4-inner {
@@ -427,7 +483,7 @@
             border-radius: 12px; padding: 14px 16px;
             display: flex; flex-direction: column;
             position: relative; overflow: hidden; min-height: 0;
-            background: rgba(10,10,13,0.75); transition: border-color 0.35s;
+            background: rgba(10,10,13,0.85); transition: border-color 0.35s;
         }
         .ch-card::before {
             content: ''; position: absolute;
@@ -464,7 +520,7 @@
         }
         .ch-eq {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.62rem; color: #777; margin-bottom: 6px; flex-shrink: 0;
+            font-size: 0.62rem; color: #bbb; margin-bottom: 6px; flex-shrink: 0;
         }
         .ch-desc {
             font-size: 0.72rem; color: #999; line-height: 1.6;
@@ -481,7 +537,7 @@
             border-radius: 14px; padding: 18px 22px 16px;
             display: flex; flex-direction: column;
             position: relative; overflow: hidden; min-height: 0;
-            background: rgba(10,10,13,0.75);
+            background: rgba(10,10,13,0.85);
         }
         .deploy-card::before {
             content: ''; position: absolute;
@@ -591,8 +647,8 @@
                 <span class="gradient-text">the wrong way.</span>
             </h1>
             <p class="hero-subtext">
-                Introducing <strong>QNaF</strong>: A spatiotemporal formalism modeling environmental interactions as a differentiable latent field Φ(x,t) ∈ ℝᵈ. Simulate complex unitary dynamics and non-Markovian noise via GPU-accelerated stochastic differential equations.
-            </p>
+    Decoherence isn't a series of isolated, discrete gate errors—it is a continuous spatiotemporal manifold. <strong>QtorchX</strong> is a high-performance quantum simulator built on PyTorch that models this reality. Simulate complex dynamics and non-Markovian noise via the QNaF formalism, fully optimized for GPU acceleration.
+</p>
             <div class="hero-grid">
                 <div class="hero-box">
                     <p class="hero-box-head">Install QtorchX</p>
@@ -603,18 +659,15 @@
                     <p class="copy-feedback" id="copy-feedback">Ready to paste into any terminal.</p>
                 </div>
                 <div class="hero-box">
-                    <p class="hero-box-head">Channels → Fields</p>
-                    <p class="pdf-card-desc">Download the QNaF formalism brief that maps noisy channels into differentiable latent fields.</p>
-                    <a class="pdf-card-link" href="devshouse/channels-to-fields-qnaf-formalism.pdf" target="_blank" rel="noreferrer noopener">Open the PDF</a>
-                </div>
+                    <p class="hero-box-head">QNaF Formalism</p>
+                    <p class="pdf-card-desc">From Channels to Fields: A Spatiotemporal Formalism for Noise in Quantum Circuits (QNaF).</p>
+                    <a class="pdf-card-link" href="https://zenodo.org/records/19184276" target="_blank" rel="noreferrer noopener">Explore the Formalism here!</a></div>
             </div>
         </section>
 
         <!-- ══ SECTION 2: REIMAGINED ══ -->
         <section class="section" id="formalism">
             <div class="s2-inner">
-
-                <p class="s2-kicker">The Noise Problem / Section 02</p>
                 <h2 class="s2-title">
                     <span class="dim">The limits of</span>
                     <span class="accent"> Discrete Injection.</span>
@@ -693,82 +746,110 @@
         <!-- ══ SECTION 3: ENGINE ══ -->
         <section class="section" id="engine">
             <div class="s3-inner">
+<h2 class="s2-title">
+    <span class="dim">The Φ-Field</span>
+    <span style="background:linear-gradient(90deg,#3498db,#9b59b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;"> Manifold.</span>
+</h2>
+<p class="s2-sub">
+    QNaF decomposes decoherence into <strong>six coupled latent channels</strong> Φ ∈ ℝ⁶, each encoding a distinct physical mechanism. Field activity percentages from empirical decomposition.
+</p>
 
-                <p class="s2-kicker">The 6-Channel Architecture / Section 03</p>
-                <h2 class="s2-title">
-                    <span class="dim">The Φ-Field</span>
-                    <span style="background:linear-gradient(90deg,#3498db,#9b59b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block;"> Manifold.</span>
-                </h2>
-                <p class="s2-sub">
-                    QNaF decomposes decoherence into <strong>six coupled latent channels</strong>, each modeling a distinct physical interaction with the bath.
-                </p>
+<div class="s2-divider"></div>
 
-                <div class="s2-divider"></div>
+<div class="channel-grid">
 
-                <div class="channel-grid">
+    <!-- Φ₁ — Memory (dominant: 59.7%) -->
+    <div class="ch-card ch-0" style="border-color:rgba(52,152,219,0.3);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <p class="ch-idx tag-blue" style="margin:0;">Φ₀ — Memory</p>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:#3498db;background:rgba(52,152,219,0.1);border:1px solid rgba(52,152,219,0.25);padding:2px 7px;border-radius:99px;">59.7%</span>
+        </div>
+        <div style="height:2px;background:rgba(255,255,255,0.06);border-radius:1px;margin-bottom:8px;flex-shrink:0;">
+            <div style="height:100%;width:59.7%;background:linear-gradient(90deg,#3498db,#9b59b6);border-radius:1px;"></div>
+        </div>
+        <h3 class="ch-name"><span style="background:linear-gradient(110deg,#fff 0%,#3498db 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Non-Markovian<br>Persistence</span></h3>
+        <p class="ch-eq">Each qubit carries forward a decaying fraction of its own noise history into the next timestep.</p>
+    </div>
 
-                    <div class="ch-card ch-0">
-                        <p class="ch-idx tag-blue">Φ₁ — Memory</p>
-                        <h3 class="ch-name"><span style="background:linear-gradient(110deg,#fff 0%,#3498db 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Bath<br>Memory</span></h3>
-                        <p class="ch-eq">M_i(t) = μ · Φᵢ(t−1)</p>
-                        <p class="ch-desc">Encodes <strong>non-Markovian persistence</strong>. The bath retains a decaying memory of past interactions, coupling each timestep to its own history.</p>
-                    </div>
+    <!-- Φ₂ — Spatial Diffusion (16.5%) -->
+    <div class="ch-card ch-1">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <p class="ch-idx tag-blue" style="margin:0;">Φ₁ — Diffusion</p>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:#3498db;background:rgba(52,152,219,0.07);border:1px solid rgba(52,152,219,0.18);padding:2px 7px;border-radius:99px;">16.5%</span>
+        </div>
+        <div style="height:2px;background:rgba(255,255,255,0.06);border-radius:1px;margin-bottom:8px;flex-shrink:0;">
+            <div style="height:100%;width:16.5%;background:linear-gradient(90deg,#3498db,#5dade2);border-radius:1px;"></div>
+        </div>
+        <h3 class="ch-name"><span style="background:linear-gradient(110deg,#fff 0%,#3498db 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Spatial<br>Diffusion</span></h3>
+        <p class="ch-eq">High field activity on one qubit leaks into its neighbours through the hardware coupling graph.</p> </div>
 
-                    <div class="ch-card ch-1">
-                        <p class="ch-idx tag-blue">Φ₂ — Diffusion</p>
-                        <h3 class="ch-name"><span style="background:linear-gradient(110deg,#fff 0%,#3498db 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Spatial<br>Diffusion</span></h3>
-                        <p class="ch-eq">β Σⱼ K(i,j) Φⱼ(t)</p>
-                        <p class="ch-desc">Propagates field values across the <strong>circuit topology graph</strong>. Crosstalk between neighboring qubits flows through the Laplacian kernel K(i,j).</p>
-                    </div>
+    <!-- Φ₃ — Disturbance Propagation (13.6%) -->
+    <div class="ch-card ch-2">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <p class="ch-idx tag-red" style="margin:0;">Φ₂ — Disturbance</p>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:#e74c3c;background:rgba(231,76,60,0.07);border:1px solid rgba(231,76,60,0.2);padding:2px 7px;border-radius:99px;">13.6%</span>
+        </div>
+        <div style="height:2px;background:rgba(255,255,255,0.06);border-radius:1px;margin-bottom:8px;flex-shrink:0;">
+            <div style="height:100%;width:13.6%;background:linear-gradient(90deg,#e74c3c,#c0392b);border-radius:1px;"></div>
+        </div>
+        <h3 class="ch-name"><span style="background:linear-gradient(110deg,#fff 0%,#e74c3c 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Disturbance<br>Propagation</span></h3>
+        <p class="ch-eq">Each OP injects a burst proportional to its op cost, a Toffoli hits 8× harder than a H gate.</p></div>
 
-                    <div class="ch-card ch-2">
-                        <p class="ch-idx tag-red">Φ₃ — Disturbance</p>
-                        <h3 class="ch-name"><span style="background:linear-gradient(110deg,#fff 0%,#e74c3c 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Gate<br>Bursts</span></h3>
-                        <p class="ch-eq">G_i(t) = γ · burst(gate)</p>
-                        <p class="ch-desc">Two-qubit gates inject <strong>burst perturbations</strong> scaled by entanglement cost: CNOT 2.5, SWAP 3.0, Toffoli 8.0. Single-qubit gates: 0.05–0.6.</p>
-                    </div>
+    <!-- Φ₄ — Nonlocal Bleed (0.1%) -->
+    <div class="ch-card ch-3">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <p class="ch-idx" style="color:#9b59b6;font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;margin:0;">Φ₃ — Nonlocal Bleed</p>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:#9b59b6;background:rgba(155,89,182,0.07);border:1px solid rgba(155,89,182,0.2);padding:2px 7px;border-radius:99px;">0.1%</span>
+        </div>
+        <div style="height:2px;background:rgba(255,255,255,0.06);border-radius:1px;margin-bottom:8px;flex-shrink:0;">
+            <div style="height:100%;width:0.1%;background:#9b59b6;border-radius:1px;min-width:3px;"></div>
+        </div>
+        <h3 class="ch-name"><span style="background:linear-gradient(110deg,#fff 0%,#9b59b6 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Long-Range<br>Coupling</span></h3>
+        <p class="ch-eq">Correlations reach across the device even without a direct gate connection, fading with graph distance.</p></div>
 
-                    <div class="ch-card ch-3">
-                        <p class="ch-idx" style="color:#9b59b6;font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Φ₄ — Equilibrium</p>
-                        <h3 class="ch-name"><span style="background:linear-gradient(110deg,#fff 0%,#9b59b6 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Thermal<br>Bleed</span></h3>
-                        <p class="ch-eq">λ · (Φᵢ(eq) − Φᵢ(t))</p>
-                        <p class="ch-desc">Field channels decay toward a <strong>thermal equilibrium Φ(eq)</strong> set by hardware temperature, preventing unbounded field accumulation over long circuits.</p>
-                    </div>
+    <!-- Φ₅ — Nonlinear Saturation (4.8%) -->
+    <div class="ch-card ch-4">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <p class="ch-idx" style="color:#2ecc71;font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;margin:0;">Φ₄ — Saturation</p>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:#2ecc71;background:rgba(46,204,113,0.07);border:1px solid rgba(46,204,113,0.2);padding:2px 7px;border-radius:99px;">4.8%</span>
+        </div>
+        <div style="height:2px;background:rgba(255,255,255,0.06);border-radius:1px;margin-bottom:8px;flex-shrink:0;">
+            <div style="height:100%;width:4.8%;background:linear-gradient(90deg,#2ecc71,#27ae60);border-radius:1px;"></div>
+        </div>
+        <h3 class="ch-name"><span style="background:linear-gradient(110deg,#fff 0%,#2ecc71 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Nonlinear<br>Saturation</span></h3>
+        <p class="ch-eq">A fully decohered qubit can't get worse, tanh clamps the energy so noise never diverges.</p></div>
 
-                    <div class="ch-card ch-4">
-                        <p class="ch-idx" style="color:#2ecc71;font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Φ₅ — Saturation</p>
-                        <h3 class="ch-name"><span style="background:linear-gradient(110deg,#fff 0%,#2ecc71 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Nonlinear<br>Saturation</span></h3>
-                        <p class="ch-eq">H(Φ) = ρ · tanh(Φ)</p>
-                        <p class="ch-desc">The <strong>tanh nonlinearity</strong> bounds field energy, preventing unphysical divergence. ρ controls the saturation threshold independently per channel.</p>
-                    </div>
+    <!-- Φ₆ — Stochastic Kicks (5.4%) -->
+    <div class="ch-card ch-5">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <p class="ch-idx" style="color:#555;font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;margin:0;">Φ₅ — Stochastic</p>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:#888;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);padding:2px 7px;border-radius:99px;">5.4%</span>
+        </div>
+        <div style="height:2px;background:rgba(255,255,255,0.06);border-radius:1px;margin-bottom:8px;flex-shrink:0;">
+            <div style="height:100%;width:5.4%;background:linear-gradient(90deg,#888,#555);border-radius:1px;"></div>
+        </div>
+        <h3 class="ch-name"><span style="background:linear-gradient(110deg,#fff 0%,#888 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Stochastic<br>Kicks</span></h3>
+        <p class="ch-eq">Random kicks that hit on active qubits than idle, pulse imperfections and noise never switched off.</p></div>
 
-                    <div class="ch-card ch-5">
-                        <p class="ch-idx" style="color:#555;font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Φ₆ — Stochastic</p>
-                        <h3 class="ch-name"><span style="background:linear-gradient(110deg,#fff 0%,#888 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Stochastic<br>Kicks</span></h3>
-                        <p class="ch-eq">σᵢ(t) · ηᵢ(t) ~ 𝒩(0,1)</p>
-                        <p class="ch-desc">White-noise injections model <strong>quantum vacuum fluctuations</strong>. σᵢ is calibrated per-qubit from hardware noise characterization data.</p>
-                    </div>
+</div><!-- /channel-grid -->
 
-                </div><!-- /channel-grid -->
-
-                <div class="stat-row">
-                    <div class="stat-card">
-                        <p class="stat-label">Field Dimension</p>
-                        <p class="stat-value">ℝ⁶ per qubit</p>
-                        <p class="stat-note">6-channel latent vector at each node of the circuit spacetime graph.</p>
-                    </div>
-                    <div class="stat-card">
-                        <p class="stat-label">Update Rule</p>
-                        <p class="stat-value">tanh-gated SDE</p>
-                        <p class="stat-note">Φᵢ(t+1) = tanh[(α−λ)Φ + λΦ(eq) + βΣK + γG + μM + ρH + ση]</p>
-                    </div>
-                    <div class="stat-card">
-                        <p class="stat-label">Decoherence Map</p>
-                        <p class="stat-value">DPM: ℝ⁶→ℝ⁴</p>
-                        <p class="stat-note">W ∈ ℝ^{4×6} projects field to Pauli error probs via softmax(WΦ+b).</p>
-                    </div>
-                </div>
-
+<div class="stat-row">
+    <div class="stat-card">
+        <p class="stat-label">Full Update Rule</p>
+        <p class="stat-value" style="font-size:0.72rem;">Reaction Diffusion Function </p>
+        <p class="stat-note">Φᵢ(t+1) = tanh[(α−λ)Φ + λΦ(eq) + βΣK·Φⱼ + γG + μM + ρH + ση]</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Circuit-Adaptive Weighting</p>
+        <p class="stat-value" style="font-size:0.72rem;">Coherent Digital Fingerprint</p>
+        <p class="stat-note">Same W matrix: Memory 60.2% on Teleportation → Disturbance 57.2% on QFT. Field self-reorganises from gate topology alone.</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Decoherence Map</p>
+        <p class="stat-value">Converting Phi Field into Actual Noise</p>
+        <p class="stat-note">softmax(WΦ+b). Pauli hierarchy stable across circuits: Z≈65%, X≈22%, Y≈13%.</p>
+    </div>
+</div>
             </div>
         </section>
 
@@ -791,32 +872,37 @@
 
                     <!-- LEFT: Code -->
                     <div class="deploy-card deploy-card-code">
-                        <p class="card-tag tag-blue" style="flex-shrink:0;margin-bottom:8px;">Python API</p>
-                        <pre class="code-pre"><span class="c-kw">from</span> qtorchx <span class="c-kw">import</span> QNaFSimulator
-<span class="c-kw">from</span> qtorchx.gates <span class="c-kw">import</span> GateLibrary
+    <p class="card-tag tag-blue" style="flex-shrink:0;margin-bottom:8px;">Python API</p>
+    <pre class="code-pre"><span class="c-cmt"># 1. Build the circuit topology</span>
+<span class="c-kw">import</span> torch
+<span class="c-kw">from</span> qtorchx.core.primitives <span class="c-kw">import</span> <span class="c-fn">Circuit</span>, <span class="c-fn">Gate</span>
+<span class="c-kw">from</span> qtorchx.noise.qnaf <span class="c-kw">import</span> <span class="c-fn">PhiManifoldExtractor</span>
+<span class="c-kw">from</span> qtorchx.core.backend <span class="c-kw">import</span> <span class="c-fn">QtorchBackend</span>
 
-<span class="c-cmt"># Initialise 4-qubit engine</span>
-sim = <span class="c-fn">QNaFSimulator</span>(
-    n_qubits=<span class="c-num">4</span>,
-    phi_dim=<span class="c-num">6</span>,        <span class="c-cmt"># Φ ∈ ℝ⁶</span>
-    noise=<span class="c-str">True</span>,
-    device=<span class="c-str">"cuda"</span>   <span class="c-cmt"># GPU-accelerated</span>
-)
+circuit = <span class="c-fn">Circuit</span>(num_qubits=<span class="c-num">128</span>)
+circuit.<span class="c-fn">add</span>(<span class="c-fn">Gate</span>(<span class="c-str">"H"</span>, qubits=[<span class="c-num">0</span>], t=<span class="c-num">0</span>))
+circuit.<span class="c-fn">add</span>(<span class="c-fn">Gate</span>(<span class="c-str">"CNOT"</span>, qubits=[<span class="c-num">0</span>, <span class="c-num">1</span>], t=<span class="c-num">1</span>))
 
-<span class="c-cmt"># Build Bell circuit</span>
-sim.<span class="c-fn">apply</span>(<span class="c-str">"H"</span>, qubit=<span class="c-num">0</span>)
-sim.<span class="c-fn">apply</span>(<span class="c-str">"CNOT"</span>, control=<span class="c-num">0</span>, target=<span class="c-num">1</span>)
+<span class="c-cmt"># 2. Define a Learnable Decoherence Map (DPM)</span>
+<span class="c-cmt"># Maps the 6D latent Φ-field to Pauli error probabilities.</span>
+DPM = torch.<span class="c-fn">randn</span>(<span class="c-num">3</span>, <span class="c-num">6</span>, device=<span class="c-str">"cuda"</span>, requires_grad=<span class="c-kw">True</span>)
+BPO = torch.<span class="c-fn">zeros</span>(<span class="c-num">3</span>, device=<span class="c-str">"cuda"</span>, requires_grad=<span class="c-kw">True</span>)
 
-<span class="c-cmt"># Run — returns noisy statevector</span>
-result = sim.<span class="c-fn">run</span>(shots=<span class="c-num">8192</span>)
+<span class="c-cmt"># 3. Extract the Continuous Spatiotemporal Φ-Field</span>
+extractor = <span class="c-fn">PhiManifoldExtractor</span>(circuit, DPM, BPO, device=<span class="c-str">"cuda"</span>)
+phi_manifold = extractor.<span class="c-fn">GetManifold</span>()  <span class="c-cmt"># Shape: (6, 128, T)</span>
+noisy_circuit = extractor.<span class="c-fn">annotate_circuit</span>()
 
-<span class="c-cmt"># Inspect Φ-field state</span>
-phi = sim.<span class="c-fn">get_phi_state</span>()
-<span class="c-cmt"># phi.shape → [n_qubits, phi_dim]</span>
+<span class="c-cmt"># 4. Execute GPU-Accelerated Simulation</span>
+backend = <span class="c-fn">QtorchBackend</span>(circuit=noisy_circuit, simulate_with_noise=<span class="c-kw">True</span>)
+statevector = backend.<span class="c-fn">get_final_statevector</span>()
 
-err = sim.<span class="c-fn">get_pauli_errors</span>()
-<span class="c-cmt"># {'Z': 0.65, 'X': 0.22, 'Y': 0.13}</span></pre>
-                    </div>
+<span class="c-cmt"># 5. Gradients flow natively through the noise manifold!</span>
+loss = <span class="c-fn">compute_fidelity</span>(statevector, target_state)
+loss.<span class="c-fn">backward</span>()
+
+<span class="c-fn">print</span>(<span class="c-str">f"∇ DPM gradients computed: {</span>DPM.grad <span class="c-kw">is not None</span><span class="c-str">}"</span>)</pre>
+</div>
 
                     <!-- RIGHT: Benchmarks -->
                     <div class="deploy-card deploy-card-bench">
@@ -1052,7 +1138,7 @@ err = sim.<span class="c-fn">get_pauli_errors</span>()
                     const norm = (v + 1) / 2;              // 0 → 1
 
                     const radius  = 0.4 + norm * maxR;
-                    const alpha   = 0.1 + norm * 0.75;
+                    const alpha   = 0.1 + norm * 0.85;
 
                     // cool-to-warm: deep blue at low, periwinkle-white at high
                     const red   = Math.round(20  + norm * 180);
