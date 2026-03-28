@@ -98,7 +98,97 @@
             padding: 24px 32px; border-radius: 8px;
         }
         .hero-subtext strong { color: #fff; font-weight: 700; }
- 
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            width: min(100%, 1020px);
+            margin-top: 2.5rem;
+        }
+        .hero-box {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 18px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 220px;
+        }
+        .hero-box-head {
+            font-size: 0.92rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #dfe9ff;
+            margin: 0;
+        }
+        .install-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            background: rgba(0,0,0,0.55);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+        .install-code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            color: #c8e7ff;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .copy-btn {
+            background: linear-gradient(90deg, #3498db, #9b59b6);
+            border: none;
+            color: #fff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            padding: 12px 18px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+        .copy-btn:hover { transform: translateY(-1px); opacity: 0.95; }
+        .copy-feedback {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            color: #b0c8ff;
+            margin: 0;
+        }
+        .pdf-card-desc {
+            color: #d1d8ea;
+            line-height: 1.75;
+            font-size: 0.92rem;
+            margin: 0;
+            flex: 1;
+        }
+        .pdf-card-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: fit-content;
+            background: linear-gradient(90deg, #fff, #3498db);
+            color: #111;
+            text-decoration: none;
+            font-weight: 700;
+            padding: 12px 20px;
+            border-radius: 999px;
+            transition: opacity 0.2s ease;
+        }
+        .pdf-card-link:hover { opacity: 0.92; }
+
+        @media (max-width: 900px) {
+            .hero-grid { grid-template-columns: 1fr; }
+            .install-box { flex-direction: column; align-items: stretch; }
+            .copy-btn { width: 100%; }
+        }
+
         /* ══════════════════════════════════════════
            S2 LAYOUT — the trick:
  
@@ -503,6 +593,21 @@
             <p class="hero-subtext">
                 Introducing <strong>QNaF</strong>: A spatiotemporal formalism modeling environmental interactions as a differentiable latent field Φ(x,t) ∈ ℝᵈ. Simulate complex unitary dynamics and non-Markovian noise via GPU-accelerated stochastic differential equations.
             </p>
+            <div class="hero-grid">
+                <div class="hero-box">
+                    <p class="hero-box-head">Install QtorchX</p>
+                    <div class="install-box">
+                        <code class="install-code" id="install-command">pip install qtorchx</code>
+                        <button type="button" class="copy-btn" id="copy-install">Copy</button>
+                    </div>
+                    <p class="copy-feedback" id="copy-feedback">Ready to paste into any terminal.</p>
+                </div>
+                <div class="hero-box">
+                    <p class="hero-box-head">Channels → Fields</p>
+                    <p class="pdf-card-desc">Download the QNaF formalism brief that maps noisy channels into differentiable latent fields.</p>
+                    <a class="pdf-card-link" href="devshouse/channels-to-fields-qnaf-formalism.pdf" target="_blank" rel="noreferrer noopener">Open the PDF</a>
+                </div>
+            </div>
         </section>
 
         <!-- ══ SECTION 2: REIMAGINED ══ -->
@@ -1028,6 +1133,27 @@ err = sim.<span class="c-fn">get_pauli_errors</span>()
             requestAnimationFrame(loop);
         }
         loop(0);
+    </script>
+    <script>
+        const copyBtn = document.getElementById('copy-install');
+        const copyFeedback = document.getElementById('copy-feedback');
+        const installCommand = 'pip install qtorchx';
+
+        if (copyBtn && copyFeedback && navigator.clipboard) {
+            copyBtn.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(installCommand);
+                    copyBtn.textContent = 'Copied';
+                    copyFeedback.textContent = 'Command copied to clipboard.';
+                } catch (err) {
+                    copyFeedback.textContent = 'Clipboard unavailable. Paste manually.';
+                }
+                setTimeout(() => {
+                    copyBtn.textContent = 'Copy';
+                    copyFeedback.textContent = 'Ready to paste into any terminal.';
+                }, 2200);
+            });
+        }
     </script>
 </body>
 </html>

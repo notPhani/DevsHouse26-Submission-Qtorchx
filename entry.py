@@ -186,7 +186,7 @@ app.add_middleware(
 )
 
 # Serve the frontend at /static
-app.mount("/static", StaticFiles(directory="static", html=True), name="static")
+app.mount("/static", StaticFiles(directory="DevsHouse26-Submission-Qtorchx/static", html=True), name="static")
 
 
 @app.get("/")
