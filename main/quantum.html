@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>QNaF - Smoky Dither Test</title>
+    <style>
+        body, html { margin: 0; padding: 0; background: #000; overflow: hidden; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+    </style>
+</head>
+<body>
+    <canvas id="smoke-canvas"></canvas>
+
+    <script type="x-shader/x-fragment" id="fs">
+        precision highp float;
+        uniform float u_time;
+        uniform vec2 u_resolution;
+
+        // High-precision pseudo-random
+        float random (in vec2 _st) {
+            return fract(sin(dot(_st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+        }
+
+        // Simplex Noise
+        float noise (in vec2 _st) {
+            vec2 i = floor(_st);
+            vec2 f = fract(_st);
+            float a = random(i);
+            float b = random(i + vec2(1.0, 0.0));
+            float c = random(i + vec2(0.0, 1.0));
+            float d = random(i + vec2(1.0, 1.0));
+            vec2 u = f * f * (3.0 - 2.0 * f);
+            return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+        }
+
+        // FBM - Fractal Brownian Motion (The "Smoke" Engine)
+        #define NUM_OCTAVES 5
+        float fbm ( in vec2 _st ) {
+            float v = 0.0;
+            float a = 0.5;
+            vec2 shift = vec2(100.0);
+            mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
+            for (int i = 0; i < NUM_OCTAVES; ++i) {
+                v += a * noise(_st);
+                _st = rot * _st * 2.0 + shift;
+                a *= 0.5;
+            }
+            return v;
+        }
+
+        // 8x8 Bayer Dither Matrix for that "React Bits" look
+        float dither8x8(vec2 uv, float brightness) {
+            int x = int(mod(uv.x, 8.0));
+            int y = int(mod(uv.y, 8.0));
+            int index = x + y * 8;
+            float limit = 0.0;
+
+            if (x < 8) {
+                if (index == 0) limit = 0.015625; if (index == 1) limit = 0.515625; if (index == 2) limit = 0.140625; if (index == 3) limit = 0.640625;
+                // ... (simplified threshold for brevity, using a standard Bayer pattern)
+                limit = fract(sin(dot(vec2(float(x), float(y)), vec2(12.9898, 78.233))) * 43758.5453);
+            }
+            return brightness > limit ? 1.0 : 0.0;
+        }
+
+        void main() {
+            vec2 st = gl_FragCoord.xy / u_resolution.xy;
+            st.x *= u_resolution.x / u_resolution.y;
+
+            // Velocity Vector: Drift to Top-Right
+            vec2 v = vec2(-0.15, -0.2) * u_time; 
+            
+            // Layered smoke coordinates
+            vec2 p = st * 3.0 + v;
+            
+            // Create "Turbulence"
+            float q = fbm(p + vec2(0.0));
+            float r = fbm(p + 1.0 * q + vec2(1.7, 9.2) + 0.15 * u_time*0.5);
+            float f = fbm(p + r);
+
+            // Contrast & Intensity
+            float smoke = smoothstep(0.3867, 0.9, f);
+            smoke = pow(smoke, 1.5) * 0.5; // Tweak for "puffy" density
+
+            // Bayer-style pixelation
+            float grain = dither8x8(gl_FragCoord.xy, smoke);
+            gl_FragColor = vec4(vec3(grain), 1.0);
+        }
+    </script>
+
+    <script>
+        const canvas = document.getElementById('smoke-canvas');
+        const gl = canvas.getContext('webgl');
+        const vertSrc = `attribute vec2 position; void main() { gl_Position = vec4(position, 0.0, 1.0); }`;
+        const fragSrc = document.getElementById('fs').text;
+
+        const program = gl.createProgram();
+        const createS = (t, s) => { const sh = gl.createShader(t); gl.shaderSource(sh, s); gl.compileShader(sh); return sh; };
+        gl.attachShader(program, createS(gl.VERTEX_SHADER, vertSrc));
+        gl.attachShader(program, createS(gl.FRAGMENT_SHADER, fragSrc));
+        gl.linkProgram(program);
+        gl.useProgram(program);
+
+        const buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+        const pos = gl.getAttribLocation(program, "position");
+        gl.enableVertexAttribArray(pos);
+        gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+
+        const ut = gl.getUniformLocation(program, "u_time");
+        const ur = gl.getUniformLocation(program, "u_resolution");
+
+        function loop(t) {
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            gl.uniform1f(ut, t * 0.001);
+            gl.uniform2f(ur, canvas.width, canvas.height);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            requestAnimationFrame(loop);
+        }
+        loop(0);
+    </script>
+</body>
+</html>

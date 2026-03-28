@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QtorchX - The QNaF Engine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            background: #000; 
+            overflow: hidden; 
+            font-family: 'Inter', sans-serif;
+            color: #fff;
+        }
+
+        /* --- LAYER 0: THE WEBGL SMOKE --- */
+        #smoke-canvas { 
+            position: fixed; top: 0; left: 0; 
+            width: 100vw; height: 100vh; 
+            z-index: 0; pointer-events: none;
+        }
+
+        /* --- LAYER 1: THE BEZIER CHANNELS --- */
+        #field-canvas {
+            position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 1; pointer-events: none;
+            mix-blend-mode: difference; /* Inverts the smoke underneath */
+        }
+
+        /* --- NAVBAR --- */
+        .nav-container {
+            position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+            z-index: 100; width: 90%; max-width: 1000px;
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(10, 10, 12, 0.6);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 24px; border-radius: 50px;
+        }
+        .brand { font-weight: 800; font-size: 1.1rem; letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px;}
+        .brand span { font-weight: 400; color: #888; font-size: 0.9rem;}
+        .nav-links { display: flex; gap: 32px; }
+        .nav-links a { color: #aaa; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: color 0.2s; }
+        .nav-links a:hover { color: #fff; }
+
+        /* --- SCROLL ARCHITECTURE --- */
+        .snap-container {
+            position: absolute; top: 0; left: 0;
+            width: 100vw; height: 100vh; z-index: 10;
+            overflow-y: scroll; overflow-x: hidden;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
+        .section {
+            width: 100vw; height: 100vh;
+            scroll-snap-align: start;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            position: relative; background: transparent;
+        }
+
+        /* --- HERO TYPOGRAPHY --- */
+        .hero-title {
+            font-size: clamp(2.5rem, 5vw, 5.5rem);
+            font-weight: 800; letter-spacing: -0.04em; line-height: 1.05;
+            text-align: center; margin: 0; z-index: 2;
+        }
+
+        .inverse-text {
+            color: #ffffff;
+            mix-blend-mode: difference;
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, #ffffff 0%, #3498db 60%, #9b59b6 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        /* Frosted Glass Subtitle Box */
+        .hero-subtext {
+            font-family: 'JetBrains Mono', monospace;
+            color: rgba(255, 255, 255, 0.75);
+            max-width: 650px; text-align: center; margin-top: 2.5rem;
+            font-size: 0.9rem; line-height: 1.7; font-weight: 400; z-index: 2;
+            
+            background: rgba(12, 12, 15, 0.85);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 24px 32px; border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .hero-subtext strong { color: #ffffff; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+    <canvas id="smoke-canvas"></canvas>
+    <canvas id="field-canvas"></canvas>
+
+    <div class="nav-container">
+        <div class="brand">QTORCHX <span>QNaF</span></div>
+        <div class="nav-links">
+            <a href="#formalism">Formalism</a>
+            <a href="#engine">Engine</a>
+            <a href="#deploy">Deploy</a>
+        </div>
+    </div>
+
+    <div class="snap-container" id="scroll-container">
+        
+        <section class="section" id="hero">
+            <h1 class="hero-title">
+                <span class="inverse-text decrypt" data-text="You are modelling quantum noise">You are modelling quantum noise</span><br>
+                <span class="gradient-text decrypt" data-text="the wrong way.">the wrong way.</span>
+            </h1>
+            
+            <p class="hero-subtext">
+                Introducing <strong>QNaF</strong>: A spatiotemporal formalism modeling environmental interactions as a differentiable latent field Φ(x,t) ∈ ℝᵈ. Simulate complex unitary dynamics and non-Markovian noise via GPU-accelerated stochastic differential equations.
+            </p>
+        </section>
+
+        <section class="section" id="formalism"><h2 class="inverse-text">Section 2: The Formalism</h2></section>
+        <section class="section" id="engine"><h2 class="inverse-text">Section 3: The Engine</h2></section>
+        <section class="section" id="deploy"><h2 class="inverse-text">Section 4: Deploy</h2></section>
+    </div>
+
+    <script type="x-shader/x-fragment" id="fs">
+        precision highp float;
+        uniform float u_time;
+        uniform vec2 u_resolution;
+        float random (in vec2 _st) { return fract(sin(dot(_st.xy, vec2(12.9898,78.233))) * 43758.5453123); }
+        float noise (in vec2 _st) {
+            vec2 i = floor(_st); vec2 f = fract(_st);
+            float a = random(i); float b = random(i + vec2(1.0, 0.0));
+            float c = random(i + vec2(0.0, 1.0)); float d = random(i + vec2(1.0, 1.0));
+            vec2 u = f * f * (3.0 - 2.0 * f);
+            return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+        }
+        #define NUM_OCTAVES 5
+        float fbm ( in vec2 _st ) {
+            float v = 0.0; float a = 0.5; vec2 shift = vec2(100.0);
+            mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
+            for (int i = 0; i < NUM_OCTAVES; ++i) { v += a * noise(_st); _st = rot * _st * 2.0 + shift; a *= 0.5; }
+            return v;
+        }
+        float dither8x8(vec2 uv, float brightness) {
+            int x = int(mod(uv.x, 8.0)); int y = int(mod(uv.y, 8.0)); int index = x + y * 8;
+            float limit = 0.0;
+            if (x < 8) { limit = fract(sin(dot(vec2(float(x), float(y)), vec2(12.9898, 78.233))) * 43758.5453); }
+            return brightness > limit ? 1.0 : 0.0;
+        }
+        void main() {
+            vec2 st = gl_FragCoord.xy / u_resolution.xy; st.x *= u_resolution.x / u_resolution.y;
+            vec2 v = vec2(-0.15, -0.2) * u_time; vec2 p = st * 3.0 + v;
+            float q = fbm(p + vec2(0.0));
+            float r = fbm(p + 1.0 * q + vec2(1.7, 9.2) + 0.15 * u_time*0.5);
+            float f = fbm(p + r);
+            float smoke = smoothstep(0.3867, 0.9, f); smoke = pow(smoke, 1.5) * 0.5; 
+            float grain = dither8x8(gl_FragCoord.xy, smoke);
+            gl_FragColor = vec4(vec3(grain), 1.0);
+        }
+    </script>
+
+    <script>
+
+        // --- SHARED SCROLL STATE ---
+        const scrollContainer = document.getElementById('scroll-container');
+        let currentScroll = 0, targetScroll = 0;
+        scrollContainer.addEventListener('scroll', () => targetScroll = scrollContainer.scrollTop);
+
+        // --- WEBGL SETUP ---
+        const sCanvas = document.getElementById('smoke-canvas');
+        const gl = sCanvas.getContext('webgl');
+        const vertSrc = `attribute vec2 position; void main() { gl_Position = vec4(position, 0.0, 1.0); }`;
+        const fragSrc = document.getElementById('fs').text;
+        const program = gl.createProgram();
+        const createS = (t, s) => { const sh = gl.createShader(t); gl.shaderSource(sh, s); gl.compileShader(sh); return sh; };
+        gl.attachShader(program, createS(gl.VERTEX_SHADER, vertSrc));
+        gl.attachShader(program, createS(gl.FRAGMENT_SHADER, fragSrc));
+        gl.linkProgram(program); gl.useProgram(program);
+        const buffer = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+        const pos = gl.getAttribLocation(program, "position"); gl.enableVertexAttribArray(pos);
+        gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+        const ut = gl.getUniformLocation(program, "u_time"), ur = gl.getUniformLocation(program, "u_resolution");
+
+        // --- 2D CANVAS SETUP ---
+        const fCanvas = document.getElementById('field-canvas');
+        const ctx = fCanvas.getContext('2d');
+        const numLines = 45;
+        const arrowSeeds = Array.from({ length: numLines }, () => ({
+            speed: 0.05 + Math.random() * 0.1, offset: Math.random() * 10, size: 3 + Math.random() * 3
+        }));
+
+        function resize() {
+            const dpr = window.devicePixelRatio || 1;
+            const w = window.innerWidth, h = window.innerHeight;
+            sCanvas.width = fCanvas.width = w * dpr; sCanvas.height = fCanvas.height = h * dpr;
+            ctx.scale(dpr, dpr);
+        }
+        window.addEventListener('resize', resize); resize();
+
+        const getPt = (p0, p1, p2, p3, t) => {
+            const iT = 1 - t; return Math.pow(iT, 3)*p0 + 3*Math.pow(iT, 2)*t*p1 + 3*iT*Math.pow(t, 2)*p2 + Math.pow(t, 3)*p3;
+        };
+
+        // --- MAIN RENDER LOOP ---
+        function loop(t) {
+            const w = window.innerWidth, h = window.innerHeight;
+            currentScroll += (targetScroll - currentScroll) * 0.05;
+            const time = currentScroll * 0.0015 + (t * 0.0002); // Add auto-evolution + scroll
+
+            // 1. Draw WebGL
+            gl.viewport(0, 0, sCanvas.width, sCanvas.height);
+            gl.uniform1f(ut, t * 0.001); gl.uniform2f(ur, sCanvas.width, sCanvas.height);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+            // 2. Draw 2D Beziers
+            ctx.clearRect(0, 0, w, h);
+            ctx.strokeStyle = '#ffffff'; // White for perfect inversion
+            
+            for (let i = 0; i < numLines; i++) {
+                const yO = (i * (h * 1.5 / numLines)) - (h * 0.25);
+                const cp1x = w * 0.35 + Math.sin(time * 0.8 + i * 0.15) * (w * 0.2);
+                const cp1y = yO + Math.cos(time * 0.6 + i * 0.08) * 350;
+                const cp2x = w * 0.65 + Math.cos(time * 0.9 - i * 0.12) * (w * 0.2);
+                const cp2y = yO + Math.sin(time * 0.7 - i * 0.1) * 350;
+                const eX = w + 100, eY = yO + Math.sin(time * 0.5 + i * 0.05) * 150;
+
+                const alpha = 0.3 + Math.abs(Math.cos(time + i * 0.1)) * 0.5;
+                ctx.beginPath(); ctx.lineWidth = 1.0 + Math.abs(Math.sin(time + i * 0.2));
+                ctx.globalAlpha = alpha;
+                ctx.moveTo(-100, yO); ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, eX, eY); ctx.stroke();
+
+                if (i % 3 === 0) {
+                    const seed = arrowSeeds[i];
+                    const progress = (time * seed.speed + seed.offset) % 1;
+                    const ax = getPt(-100, cp1x, cp2x, eX, progress), ay = getPt(yO, cp1y, cp2y, eY, progress);
+                    const angle = Math.atan2(getPt(yO, cp1y, cp2y, eY, progress + 0.005) - ay, getPt(-100, cp1x, cp2x, eX, progress + 0.005) - ax);
+                    ctx.save(); ctx.globalAlpha = 0.9; ctx.translate(ax, ay); ctx.rotate(angle);
+                    ctx.fillStyle = "#fff"; ctx.beginPath();
+                    ctx.moveTo(5, 0); ctx.lineTo(-5, -3); ctx.lineTo(-5, 3); ctx.fill(); ctx.restore();
+                }
+            }
+            ctx.globalAlpha = 1;
+            requestAnimationFrame(loop);
+        }
+        loop(0);
+    </script>
+</body>
+</html>

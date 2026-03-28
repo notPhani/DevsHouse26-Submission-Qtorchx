@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QtorchX - QNaF Synthetic Topography</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            background-color: #ffffff;
+        }
+
+        #field-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0; 
+            pointer-events: none;
+        }
+
+        .scroll-space {
+            position: relative;
+            z-index: 1;
+            height: 500vh; 
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="field-canvas"></canvas>
+    <div class="scroll-space"></div>
+
+    <script>
+        const canvas = document.getElementById('field-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        // Razor-sharp scaling for Retina/High-DPI displays
+        function resizeCanvas() {
+            const dpr = window.devicePixelRatio || 1;
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            ctx.scale(dpr, dpr);
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Smooth Scroll LERP
+        let currentScroll = 0;
+        let targetScroll = 0;
+
+        window.addEventListener('scroll', () => {
+            targetScroll = window.scrollY;
+        });
+
+        // Field Configuration
+        const numLines = 45; // Bumped up slightly to show off the intersections
+
+        function render() {
+            ctx.clearRect(0, 0, width, height);
+
+            currentScroll += (targetScroll - currentScroll) * 0.05;
+            const time = currentScroll * 0.0015;
+
+            ctx.lineCap = 'round';
+
+            for (let i = 0; i < numLines; i++) {
+                ctx.beginPath();
+                
+                // Spread the starting Y positions out
+                const yOffset = (i * (height * 1.5 / numLines)) - (height * 0.25);
+                ctx.moveTo(-100, yOffset);
+
+                // --- THE DISTURBANCE NODES ---
+                // By multiplying 'i' by larger offsets (0.15, 0.08), the lines stop moving 
+                // perfectly parallel and start wrapping around invisible centers of gravity.
+                
+                const cp1x = width * 0.35 + Math.sin(time * 0.8 + i * 0.15) * (width * 0.2);
+                const cp1y = yOffset + Math.cos(time * 0.6 + i * 0.08) * 350;
+                
+                const cp2x = width * 0.65 + Math.cos(time * 0.9 - i * 0.12) * (width * 0.2);
+                const cp2y = yOffset + Math.sin(time * 0.7 - i * 0.1) * 350;
+
+                const endX = width + 100;
+                const endY = yOffset + Math.sin(time * 0.5 + i * 0.05) * 150;
+
+                // --- FALSE DEPTH OF FIELD ---
+                // Lines smoothly pulse in thickness (0.5px to 2.0px) and opacity 
+                // as they flow, making some parts of the field pop into focus.
+                const dynamicWeight = 0.5 + Math.abs(Math.sin(time + i * 0.2)) * 1.5;
+                const dynamicAlpha = 0.15 + Math.abs(Math.cos(time + i * 0.1)) * 0.25;
+                
+                ctx.lineWidth = dynamicWeight;
+                ctx.strokeStyle = `rgba(0, 0, 0, ${dynamicAlpha})`;
+
+                ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, endX, endY);
+                ctx.stroke();
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        render();
+    </script>
+</body>
+</html>
